@@ -43,35 +43,37 @@ impl SymetricMethod {
 
     }
 
-    pub fn b64(uw: &String, vw: &String) -> String {
+    pub fn b64(vw: &String) -> String {
         let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         let mut binary_word = "".to_string();
         let mut new_pass = String::new();
 
-        for i in uw.clone().into_bytes() {
+        for i in vw.clone().into_bytes() {
             binary_word += &format!("0{:b}", i);
+        }
+        
+        let mut padding = "".to_string();
+        while binary_word.len() % 6 != 0 {
+            binary_word += "00";
+            padding += "=";
         }
 
         let mut x = 0;
         let mut new_binary = String::new();
         for i in binary_word.chars(){
+            if x == 6{ new_binary += " "; x = 0 }
             new_binary += &i.to_string();
             x += 1;
-            if x == 6{ new_binary += " "; x = 0 }
         }
-
-        while new_binary.len() % 6 != 0 {
-            new_binary += "0";
-        }
-
-        let mut binary_vec: Vec<&str> = new_binary.split(" ").collect();
+        
+        let binary_vec: Vec<&str> = new_binary.split(" ").collect();
         for i in binary_vec{
             let number = usize::from_str_radix(i, 2).unwrap();
             new_pass += &(alphabet.as_bytes()[number] as char).to_string();
         }
 
-        println!("{:?}", new_pass);
-        String::from(format!("{}, {}i", uw, vw))
+        new_pass += &padding;
+        new_pass
     }
 
     pub fn xor(uw: &String, vw: &String) -> String {
@@ -85,11 +87,12 @@ impl SymetricMethod {
     pub fn gen_pass(method: &Self, uw: &String, vw: &String) -> String {
         match method {
             Self::Vigenere => Self::vigenere(&uw, &vw),
-            Self::B64 => Self::b64(&uw, &vw),
+            Self::B64 => Self::b64(&uw),
             Self::Xor => Self::xor(&uw, &vw),
             Self::Enigma => Self::enigma(&uw, &vw),
         }
     }
+
 }
 
 #[derive(Debug)]
@@ -111,6 +114,7 @@ impl LoginData {
             svw: variable_word,
         }
     }
+
 }
 
 #[cfg(test)]
@@ -124,13 +128,13 @@ mod tests {
         let vw: String = String::from("variablepass");
 
         assert_eq!(SymetricMethod::vigenere(&uw, &vw), "pnzyufaehs");
-        assert_eq!(SymetricMethod::b64(&uw, &vw), format!("{}, {}", &uw, &vw));
+        assert_eq!(SymetricMethod::b64(&vw), "dmFyaWFibGVwYXNz");
         assert_eq!(SymetricMethod::xor(&uw, &vw), format!("{}, {}", &uw, &vw));
         assert_eq!(SymetricMethod::enigma(&uw, &vw), format!("{}, {}", &uw, &vw));
     }
 
     #[test]
-    fn gen_vigenere(){
+    fn gen_test(){
         let method_enum = vec![
             SymetricMethod::Vigenere,
             SymetricMethod::B64,
@@ -141,7 +145,7 @@ mod tests {
         let vw: String = String::from("variablepass");
         
         assert_eq!(SymetricMethod::gen_pass(&method_enum[0], &uw, &vw), "pnzyufaehs");
-        assert_eq!(SymetricMethod::gen_pass(&method_enum[1], &uw, &vw), format!("{}, {}", &uw, &vw));
+        assert_eq!(SymetricMethod::gen_pass(&method_enum[1], &vw, &uw), "dmFyaWFibGVwYXNz");
         assert_eq!(SymetricMethod::gen_pass(&method_enum[2], &uw, &vw), format!("{}, {}", &uw, &vw));
         assert_eq!(SymetricMethod::gen_pass(&method_enum[3], &uw, &vw), format!("{}, {}", &uw, &vw));
     }
@@ -163,11 +167,11 @@ mod tests {
             svw: vw.clone(),
             cpw: "pnzyufaehs".to_string()
         });
-        assert_eq!(LoginData::new(method_enum[1].clone(), uw.clone(), vw.clone()), LoginData {
+        assert_eq!(LoginData::new(method_enum[1].clone(), vw.clone(), "".to_string()), LoginData {
             symetric_method: method_enum[1].clone(),
-            suw: uw.clone(),
-            svw: vw.clone(),
-            cpw: format!("{}, {}", &uw, &vw)
+            suw: vw.clone(),
+            svw: "".to_string(),
+            cpw: "dmFyaWFibGVwYXNz".to_string()
         });
         assert_eq!(LoginData::new(method_enum[2].clone(), uw.clone(), vw.clone()), LoginData {
             symetric_method: method_enum[2].clone(),
