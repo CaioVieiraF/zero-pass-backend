@@ -101,7 +101,7 @@ pub struct LoginData {
     symetric_method: SymetricMethod,
     suw: String,
     svw: String,
-    cpw: String
+    pub cpw: String
 }
 
 impl LoginData {
