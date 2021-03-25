@@ -21,10 +21,9 @@ impl SymetricMethod {
             new_pass.push(
                 match char_position {
                     Some(mut position) => {
-                        //let u_p = unique.find(i).unwrap();
                         position += alphabet.find(variable.as_bytes()[{
                             if x > variable.len() - 1 {
-                                x - variable.len()
+                                x - (variable.len() * (x/variable.len() as usize))
                             } else {
                                 x
                             }
@@ -161,6 +160,12 @@ mod tests {
         let uw: String = String::from("uniquepass");
         let vw: String = String::from("variablepass");
 
+        assert_eq!(LoginData::new(method_enum[0].clone(), "longer".to_string(), "short".to_string()), LoginData {
+            symetric_method: method_enum[0].clone(),
+            suw: "longer".to_string(),
+            svw: "short".to_string(),
+            cpw: "dvbxxj".to_string()
+        });
         assert_eq!(LoginData::new(method_enum[0].clone(), uw.clone(), vw.clone()), LoginData {
             symetric_method: method_enum[0].clone(),
             suw: uw.clone(),
