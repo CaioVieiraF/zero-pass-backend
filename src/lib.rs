@@ -1,4 +1,6 @@
 
+use std::collections::HashMap;
+
 #[derive(Debug)]
 #[derive(PartialEq)]
 #[derive(Clone)]
@@ -7,7 +9,18 @@ pub enum SymetricMethod {
 }
 
 impl SymetricMethod {
-        
+
+    pub fn get_methods() -> HashMap<String, SymetricMethod> {
+        let mut methods: HashMap<String, SymetricMethod> = HashMap::new();
+
+        methods.insert(String::from("Vigenere"), SymetricMethod::Vigenere);
+        methods.insert(String::from("Base64"), SymetricMethod::B64);
+        methods.insert(String::from("Xor"), SymetricMethod::Xor);
+        methods.insert(String::from("Enigma"), SymetricMethod::Enigma);
+
+        methods
+    }
+
     pub fn vigenere(uw: &String, vw: &String) -> String{
         let alphabet = "abcdefghijklmnopqrstuvwxyz";
 
@@ -147,6 +160,15 @@ mod tests {
         assert_eq!(SymetricMethod::gen_pass(&method_enum[1], &vw, &uw), "dmFyaWFibGVwYXNz");
         assert_eq!(SymetricMethod::gen_pass(&method_enum[2], &uw, &vw), format!("{}, {}", &uw, &vw));
         assert_eq!(SymetricMethod::gen_pass(&method_enum[3], &uw, &vw), format!("{}, {}", &uw, &vw));
+    }
+
+    #[test]
+    fn hashmap_test() {
+        let methods: HashMap<String, SymetricMethod> = SymetricMethod::get_methods();
+        assert_eq!(Some(&SymetricMethod::Vigenere), methods.get("Vigenere"));
+        assert_eq!(Some(&SymetricMethod::B64), methods.get("Base64"));
+        assert_eq!(Some(&SymetricMethod::Enigma), methods.get("Enigma"));
+        assert_eq!(Some(&SymetricMethod::Xor), methods.get("Xor"));
     }
 
     #[test]
