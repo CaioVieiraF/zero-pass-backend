@@ -1,17 +1,5 @@
-use std::collections::HashMap;
+
 use crate::Methods;
-
-pub fn get_methods() -> HashMap<String, Methods> {
-
-    let mut methods: HashMap<String, Methods> = HashMap::new();
-
-    methods.insert(String::from("Vigenere"), Methods::Vigenere);
-    methods.insert(String::from("Base64"), Methods::B64);
-    methods.insert(String::from("Xor"), Methods::Xor);
-    methods.insert(String::from("Enigma"), Methods::Enigma);
-
-    methods
-}
 
 pub fn vigenere(uw: &String, vw: &String) -> String{
     let alphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -91,37 +79,41 @@ pub fn xor(uw: &String, vw: &String) -> String {
     String::from(format!("{}, {}", uw, vw))
 }
 
-pub fn enigma(uw: Vec<String>, vw: &String, swb: &String) -> String {
-    let alphabet = "abcdefghijklmnopqrstuvwxyz";
-    let new_pass = String::new();
+pub fn enigma(mut uw: Vec<String>, vw: &String, swb: &String) -> String {
     
-    for mut each in vw.chars(){
-        let char_position = alphabet.find(each).expect("Only letters are permited!");
-        each = swb.as_bytes()[char_position] as char;
+    let variable: String = vw.to_uppercase();
+    let switchboard: String = swb.to_uppercase();
 
-        let scrambled = String::from(alphabet);
-        for rotor in uw{
+    let alphabet = "abcdefghijklmnopqrstuvwxyz";
+    let mut new_pass = String::new();
+    
+    for mut each in variable.chars(){
+        let char_position = alphabet.find(each).expect("Only letters are permited!");
+        each = switchboard.as_bytes()[char_position] as char;
+
+        let mut scrambled = String::from(alphabet);
+        for rotor in &uw{
             let char_position = scrambled.find(each).expect("Unexpected error!");
             each = rotor.as_bytes()[char_position] as char;
-            scrambled = rotor;
+            scrambled = rotor.to_string();
         }
 
         let char_position = alphabet.find(each).expect("Unexpected error!");
         each = alphabet.as_bytes()[alphabet.len() - 1 - char_position] as char;
         
         uw.reverse();
-        let scrambled = uw[0];
+        let mut scrambled = &uw[0];
         for rotor in &uw[1..]{
             let char_position = scrambled.find(each).expect("Unexpected error!");
             each = rotor.as_bytes()[char_position] as char;
-            scrambled = *rotor;
+            scrambled = rotor;
         }
         let char_position = scrambled.find(each).expect("Unexpected error!");
         each = alphabet.as_bytes()[char_position] as char;
 
 
 
-        let char_position = swb.find(each).expect("Unexpected error!");
+        let char_position = switchboard.find(each).expect("Unexpected error!");
         each = alphabet.as_bytes()[char_position] as char;
 
         new_pass.push(each);
@@ -130,12 +122,15 @@ pub fn enigma(uw: Vec<String>, vw: &String, swb: &String) -> String {
     new_pass
 }
 
-pub fn gen_pass(method: &Methods, uw: &String, vw: &String) -> String {
+pub fn gen_pass(method: &Methods) -> String {
+
     match method {
-        Methods::Vigenere => vigenere(&uw, &vw),
-        Methods::B64 => b64(&uw),
-        Methods::Xor => xor(&uw, &vw),
-        Methods::Enigma => enigma(&uw, &vw),
+        Methods::Vigenere { word, password } => vigenere(word, password),
+        Methods::B64 { word } => b64(word),
+        Methods::Xor { word, password } => xor(word, password),
+        Methods::Enigma { message, switchboard, rotors } => {
+            enigma(rotors.to_vec(), message, switchboard)
+        },
     }
 }
 
