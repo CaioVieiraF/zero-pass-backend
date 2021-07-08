@@ -53,10 +53,16 @@ pub fn b64(vw: &String) -> String {
     let mut binary_word = "".to_string();
     let mut new_pass = String::new();
 
+    for i in vw.chars() {
+        if !alphabet.contains(i){
+            panic!("Caracteres especiais não são permitidos!");
+        }
+    }
+
     for i in vw.clone().into_bytes() {
         binary_word += &format!("0{:b}", i);
     }
-        
+
     let mut padding = "".to_string();
     while binary_word.len() % 6 != 0 {
         binary_word += "00";
@@ -85,8 +91,43 @@ pub fn xor(uw: &String, vw: &String) -> String {
     String::from(format!("{}, {}", uw, vw))
 }
 
-pub fn enigma(uw: &String, vw: &String) -> String {
-    String::from(format!("{}, {}", uw, vw))
+pub fn enigma(uw: Vec<String>, vw: &String, swb: &String) -> String {
+    let alphabet = "abcdefghijklmnopqrstuvwxyz";
+    let new_pass = String::new();
+    
+    for mut each in vw.chars(){
+        let char_position = alphabet.find(each).expect("Only letters are permited!");
+        each = swb.as_bytes()[char_position] as char;
+
+        let scrambled = String::from(alphabet);
+        for rotor in uw{
+            let char_position = scrambled.find(each).expect("Unexpected error!");
+            each = rotor.as_bytes()[char_position] as char;
+            scrambled = rotor;
+        }
+
+        let char_position = alphabet.find(each).expect("Unexpected error!");
+        each = alphabet.as_bytes()[alphabet.len() - 1 - char_position] as char;
+        
+        uw.reverse();
+        let scrambled = uw[0];
+        for rotor in &uw[1..]{
+            let char_position = scrambled.find(each).expect("Unexpected error!");
+            each = rotor.as_bytes()[char_position] as char;
+            scrambled = *rotor;
+        }
+        let char_position = scrambled.find(each).expect("Unexpected error!");
+        each = alphabet.as_bytes()[char_position] as char;
+
+
+
+        let char_position = swb.find(each).expect("Unexpected error!");
+        each = alphabet.as_bytes()[char_position] as char;
+
+        new_pass.push(each);
+    }
+
+    new_pass
 }
 
 pub fn gen_pass(method: &Methods, uw: &String, vw: &String) -> String {
