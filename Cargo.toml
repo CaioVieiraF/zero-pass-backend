@@ -1,6 +1,6 @@
 [package]
 name = "zero_pass_backend"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["caio <wabros@protonmail.com>"]
 license = "GPL-3.0"
 description = "The Zero Pass Project brain"
