@@ -1,7 +1,20 @@
 
-use crate::Methods;
+#[derive(PartialEq)]
+#[derive(Clone)]
+#[derive(Debug)]
+pub struct MethodArgs<'a>{
+    pub word: &'a str,
+    pub password: &'a str
+}
 
-pub fn vigenere(uw: &String, vw: &String) -> String{
+#[derive(PartialEq)]
+#[derive(Clone)]
+#[derive(Debug)]
+pub enum Methods<'a>{
+    Vigenere(MethodArgs<'a>), B64(MethodArgs<'a>), Xor(MethodArgs<'a>)
+}
+
+pub fn vigenere(uw: &str, vw: &str) -> String{
     let alphabet = "abcdefghijklmnopqrstuvwxyz";
 
     let unique: String = uw.to_lowercase();
@@ -36,7 +49,7 @@ pub fn vigenere(uw: &String, vw: &String) -> String{
 
 }
 
-pub fn b64(vw: &String) -> String {
+pub fn b64(vw: &str) -> String {
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut binary_word = "".to_string();
     let mut new_pass = String::new();
@@ -47,7 +60,7 @@ pub fn b64(vw: &String) -> String {
         }
     }
 
-    for i in vw.clone().into_bytes() {
+    for i in vw.clone().bytes() {
         binary_word += &format!("0{:b}", i);
     }
 
@@ -75,62 +88,16 @@ pub fn b64(vw: &String) -> String {
     new_pass
 }
 
-pub fn xor(uw: &String, vw: &String) -> String {
+pub fn xor(uw: &str, vw: &str) -> String {
     String::from(format!("{}, {}", uw, vw))
-}
-
-pub fn enigma(mut uw: Vec<String>, vw: &String, swb: &String) -> String {
-    
-    let variable: String = vw.to_uppercase();
-    let switchboard: String = swb.to_uppercase();
-
-    let alphabet = "abcdefghijklmnopqrstuvwxyz";
-    let mut new_pass = String::new();
-    
-    for mut each in variable.chars(){
-        let char_position = alphabet.find(each).expect("Only letters are permited!");
-        each = switchboard.as_bytes()[char_position] as char;
-
-        let mut scrambled = String::from(alphabet);
-        for rotor in &uw{
-            let char_position = scrambled.find(each).expect("Unexpected error!");
-            each = rotor.as_bytes()[char_position] as char;
-            scrambled = rotor.to_string();
-        }
-
-        let char_position = alphabet.find(each).expect("Unexpected error!");
-        each = alphabet.as_bytes()[alphabet.len() - 1 - char_position] as char;
-        
-        uw.reverse();
-        let mut scrambled = &uw[0];
-        for rotor in &uw[1..]{
-            let char_position = scrambled.find(each).expect("Unexpected error!");
-            each = rotor.as_bytes()[char_position] as char;
-            scrambled = rotor;
-        }
-        let char_position = scrambled.find(each).expect("Unexpected error!");
-        each = alphabet.as_bytes()[char_position] as char;
-
-
-
-        let char_position = switchboard.find(each).expect("Unexpected error!");
-        each = alphabet.as_bytes()[char_position] as char;
-
-        new_pass.push(each);
-    }
-
-    new_pass
 }
 
 pub fn gen_pass(method: &Methods) -> String {
 
     match method {
-        Methods::Vigenere { word, password } => vigenere(word, password),
-        Methods::B64 { word } => b64(word),
-        Methods::Xor { word, password } => xor(word, password),
-        Methods::Enigma { message, switchboard, rotors } => {
-            enigma(rotors.to_vec(), message, switchboard)
-        },
+        Methods::Vigenere(args) => vigenere(args.word, args.password),
+        Methods::B64(args) => b64(args.password),
+        Methods::Xor(args) => xor(args.word, args.password),
     }
 }
 
