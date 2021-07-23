@@ -92,7 +92,7 @@ pub fn b64(vw: &str) -> CipherResult {
     Ok(new_pass)
 }
 
-pub fn xor(uw: &str, vw: &str) -> CipherResult {
+pub fn xor(_uw: &str, _vw: &str) -> CipherResult {
     Ok(String::new())
 }
 

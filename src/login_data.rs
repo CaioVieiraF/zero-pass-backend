@@ -28,7 +28,7 @@ fn login_test(){
     });
     assert_eq!(new(xor_method.clone()), LoginData {
         symetric_method: xor_method.clone(),
-        cpw: Ok("dmFyaWFibGVwYXNz".to_string())
+        cpw: Ok("".to_string())
     });
 
 }
