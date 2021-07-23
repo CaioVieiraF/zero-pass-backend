@@ -1,20 +1,17 @@
+use crate::{ CipherError, CipherResult };
 
-#[derive(PartialEq)]
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MethodArgs<'a>{
     pub word: &'a str,
     pub password: &'a str
 }
 
-#[derive(PartialEq)]
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Methods<'a>{
     Vigenere(MethodArgs<'a>), B64(MethodArgs<'a>), Xor(MethodArgs<'a>)
 }
 
-pub fn vigenere(uw: &str, vw: &str) -> String{
+pub fn vigenere(uw: &str, vw: &str) -> CipherResult {
     let alphabet = "abcdefghijklmnopqrstuvwxyz";
 
     let unique: String = uw.to_lowercase();
@@ -28,13 +25,20 @@ pub fn vigenere(uw: &str, vw: &str) -> String{
         new_pass.push(
             match char_position {
                 Some(mut position) => {
-                    position += alphabet.find(variable.as_bytes()[{
-                        if x > variable.len() - 1 {
-                            x - (variable.len() * (x/variable.len() as usize))
-                        } else {
-                            x
-                        }
-                    }] as char).unwrap();
+                    let character_to_find = {
+                        variable.as_bytes()[{
+                            if x > variable.len() - 1 {
+                                x - (variable.len() * (x/variable.len() as usize))
+                            } else {
+                                x
+                            }
+                        }] as char
+                    };
+
+                    position += match alphabet.find(character_to_find) {
+                        Some(x) => x,
+                        None => return Err(CipherError::InvalidCharacterError)
+                    };
                     position %= alphabet.len();
 
                     x += 1;
@@ -45,18 +49,18 @@ pub fn vigenere(uw: &str, vw: &str) -> String{
         );
     }
 
-    new_pass
+    Ok(new_pass)
 
 }
 
-pub fn b64(vw: &str) -> String {
+pub fn b64(vw: &str) -> CipherResult {
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut binary_word = "".to_string();
     let mut new_pass = String::new();
 
     for i in vw.chars() {
         if !alphabet.contains(i){
-            panic!("Caracteres especiais não são permitidos!");
+            return Err(CipherError::InvalidCharacterError)
         }
     }
 
@@ -85,14 +89,54 @@ pub fn b64(vw: &str) -> String {
     }
 
     new_pass += &padding;
-    new_pass
+    Ok(new_pass)
 }
 
-pub fn xor(uw: &str, vw: &str) -> String {
-    String::from(format!("{}, {}", uw, vw))
+pub fn xor(uw: &str, vw: &str) -> CipherResult {
+
+    let alphabet = "abcdefghijklmnopqrstuvwxyz";
+    let mut binary_vw_word = "".to_string();
+    let mut binary_uw_word = "".to_string();
+    let mut new_pass = String::new();
+
+    for i in vw.clone().bytes() {
+        binary_vw_word += &format!("0{:b}", i);
+    }
+    for i in uw.clone().bytes() {
+        binary_uw_word += &format!("0{:b}", i);
+    }
+
+    println!("{:?}", binary_uw_word);
+    println!("{:?}", binary_vw_word);
+
+    let mut x = 0;
+    let mut binary_pass = String::new();
+    for i in 0..uw.len() {
+        if x == 8 {binary_pass += " "; x = 0}
+        let uw_val = &(binary_uw_word.as_bytes()[{
+                            if i > binary_uw_word.len() - 1 {
+                                i - (binary_uw_word.len() * (i/binary_uw_word.len() as usize))
+                            } else {
+                                i
+                            }
+                        }] as char).to_string().parse::<u8>().unwrap();
+        let vw_val = &(binary_vw_word.as_bytes()[i] as char).to_string().parse().unwrap();
+        binary_pass += &format!("0{:b}", uw_val^vw_val);
+        x += 1;
+    }
+    
+    let binary_vec: Vec<&str> = binary_pass.split(" ").collect();
+    for i in binary_vec{
+        let number = usize::from_str_radix(i, 2).unwrap();
+        new_pass += &(alphabet.as_bytes()[number] as char).to_string();
+    }
+
+    println!("{:?}", binary_pass);
+
+    Ok(String::new())
 }
 
-pub fn gen_pass(method: &Methods) -> String {
+pub fn gen_pass(method: &Methods) -> CipherResult {
 
     match method {
         Methods::Vigenere(args) => vigenere(args.word, args.password),

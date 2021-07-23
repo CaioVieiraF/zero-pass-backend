@@ -4,12 +4,17 @@ use crate::encrypt::{ Methods, MethodArgs };
 pub mod encrypt;
 pub mod login_data;
 
-#[derive(Debug)]
-#[derive(PartialEq)]
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum CipherError {
+    InvalidCharacterError
+}
+
+pub type CipherResult = Result<String, CipherError>;
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct LoginData<'a>{
     symetric_method: Methods<'a>,
-    pub cpw: String
+    pub cpw: CipherResult
 }
 
 pub fn get_methods<'a>() -> HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> {
@@ -32,9 +37,9 @@ mod tests {
         let uw: String = String::from("uniquepass");
         let vw: String = String::from("variablepass");
 
-        assert_eq!(encrypt::vigenere(&uw, &vw), "pnzyufaehs");
-        assert_eq!(encrypt::b64(&vw), "dmFyaWFibGVwYXNz");
-        assert_eq!(encrypt::xor(&uw, &vw), format!("{}, {}", &uw, &vw));
+        assert_eq!(encrypt::vigenere(&uw, &vw), Ok("pnzyufaehs".to_string()));
+        assert_eq!(encrypt::b64(&vw), Ok("dmFyaWFibGVwYXNz".to_string()));
+        assert_eq!(encrypt::xor(&uw, &vw), Ok("dmFyaWFibGVwYXNz".to_string()));
     }
 
     #[test]
@@ -42,10 +47,11 @@ mod tests {
         let data = encrypt::MethodArgs{ word: "uniquepass", password: "variablepass" };
         let vige_method = Methods::Vigenere(data.clone());
         let base_method = Methods::B64(data.clone());
-        let _xor_method = Methods::Xor(data.clone());
+        let xor_method = Methods::Xor(data.clone());
 
-        assert_eq!(encrypt::gen_pass(&vige_method), "pnzyufaehs".to_string());
-        assert_eq!(encrypt::gen_pass(&base_method), "dmFyaWFibGVwYXNz".to_string());
+        assert_eq!(encrypt::gen_pass(&vige_method), Ok("pnzyufaehs".to_string()));
+        assert_eq!(encrypt::gen_pass(&base_method), Ok("dmFyaWFibGVwYXNz".to_string()));
+        assert_eq!(encrypt::gen_pass(&xor_method), Ok("dmFyaWFibGVwYXNz".to_string()));
     }
 
     #[test]

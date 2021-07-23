@@ -16,15 +16,19 @@ fn login_test(){
 
     let vige_method = Methods::Vigenere(data.clone());
     let base_method = Methods::B64(data.clone());
-    let _xor_method = Methods::Xor(data.clone());
+    let xor_method = Methods::Xor(data.clone());
 
     assert_eq!(new(vige_method.clone()), LoginData {
         symetric_method: vige_method.clone(),
-        cpw: "pnzyufaehs".to_string()
+        cpw: Ok("pnzyufaehs".to_string())
     });
     assert_eq!(new(base_method.clone()), LoginData {
         symetric_method: base_method.clone(),
-        cpw: "dmFyaWFibGVwYXNz".to_string()
+        cpw: Ok("dmFyaWFibGVwYXNz".to_string())
     });
-}
+    assert_eq!(new(xor_method.clone()), LoginData {
+        symetric_method: xor_method.clone(),
+        cpw: Ok("dmFyaWFibGVwYXNz".to_string())
+    });
 
+}
