@@ -1,20 +1,21 @@
+use crate::encrypt::{MethodArgs, Methods};
 use std::collections::HashMap;
-use crate::encrypt::{ Methods, MethodArgs };
 
 pub mod encrypt;
 pub mod login_data;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CipherError {
-    InvalidCharacterError
+    InvalidCharacterError,
+    InvalidMethodError,
 }
 
 pub type CipherResult = Result<String, CipherError>;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct LoginData<'a>{
+pub struct LoginData<'a> {
     symetric_method: Methods<'a>,
-    pub cpw: CipherResult
+    pub cpw: CipherResult,
 }
 
 pub fn get_methods<'a>() -> HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> {
@@ -43,27 +44,39 @@ mod tests {
     }
 
     #[test]
-    fn gen_test(){
-        let data = encrypt::MethodArgs{ word: "uniquepass", password: "variablepass" };
+    fn gen_test() {
+        let data = encrypt::MethodArgs {
+            word: "uniquepass",
+            password: "variablepass",
+        };
         let vige_method = Methods::Vigenere(data.clone());
         let base_method = Methods::B64(data.clone());
         let xor_method = Methods::Xor(data.clone());
 
-        assert_eq!(encrypt::gen_pass(&vige_method), Ok("pnzyufaehs".to_string()));
-        assert_eq!(encrypt::gen_pass(&base_method), Ok("dmFyaWFibGVwYXNz".to_string()));
-        assert_eq!(encrypt::gen_pass(&xor_method), Ok("dmFyaWFibGVwYXNz".to_string()));
+        assert_eq!(
+            encrypt::gen_pass(&vige_method),
+            Ok("pnzyufaehs".to_string())
+        );
+        assert_eq!(
+            encrypt::gen_pass(&base_method),
+            Ok("dmFyaWFibGVwYXNz".to_string())
+        );
+        assert_eq!(
+            encrypt::gen_pass(&xor_method),
+            Ok("dmFyaWFibGVwYXNz".to_string())
+        );
     }
 
     #[test]
     fn hashmap_test<'a>() {
         let methods: HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> = crate::get_methods();
-        
+
         for (key, _) in methods.iter() {
             let get_func = methods.get(key).unwrap();
-            let _method: Methods = get_func(
-                    MethodArgs { word: "a", password: "b" }
-                );
+            let _method: Methods = get_func(MethodArgs {
+                word: "a",
+                password: "b",
+            });
         }
     }
-
 }
