@@ -40,7 +40,7 @@ mod tests {
 
         assert_eq!(encrypt::vigenere(&uw, &vw), Ok("pnzyufaehs".to_string()));
         assert_eq!(encrypt::b64(&vw), Ok("dmFyaWFibGVwYXNz".to_string()));
-        assert_eq!(encrypt::xor(&uw, &vw), Ok("dmFyaWFibGVwYXNz".to_string()));
+        assert_eq!(encrypt::xor(&uw, &vw), Ok("dpyuheds".to_string()));
     }
 
     #[test]
@@ -61,10 +61,7 @@ mod tests {
             encrypt::gen_pass(&base_method),
             Ok("dmFyaWFibGVwYXNz".to_string())
         );
-        assert_eq!(
-            encrypt::gen_pass(&xor_method),
-            Ok("dmFyaWFibGVwYXNz".to_string())
-        );
+        assert_eq!(encrypt::gen_pass(&xor_method), Ok("dpyuheds".to_string()));
     }
 
     #[test]

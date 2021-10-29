@@ -1,4 +1,4 @@
-use crate::{CipherResult, CipherError};
+use crate::{CipherError, CipherResult};
 
 pub fn b64(vw: &str) -> CipherResult {
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

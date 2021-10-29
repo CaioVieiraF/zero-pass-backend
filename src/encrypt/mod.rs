@@ -4,9 +4,9 @@ pub mod xor;
 
 use crate::CipherResult;
 
+pub use base64::b64;
 pub use vigenere::vigenere;
 pub use xor::xor;
-pub use base64::b64;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MethodArgs<'a> {

@@ -1,4 +1,4 @@
-use crate::{CipherResult, CipherError};
+use crate::{CipherError, CipherResult};
 
 pub fn vigenere(uw: &str, vw: &str) -> CipherResult {
     let alphabet = "abcdefghijklmnopqrstuvwxyz";

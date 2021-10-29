@@ -38,7 +38,7 @@ fn login_test() {
         new(xor_method.clone()),
         LoginData {
             symetric_method: xor_method.clone(),
-            cpw: Ok("dmFyaWFibGVwYXNz".to_string())
+            cpw: Ok("dpyuheds".to_string())
         }
     );
 }
