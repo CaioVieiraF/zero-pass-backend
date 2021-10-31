@@ -54,14 +54,30 @@ mod tests {
         let xor_method = Methods::Xor(data.clone());
 
         assert_eq!(
-            encrypt::gen_pass(&vige_method),
+            encrypt::gen_pass(&vige_method, None),
             Ok("pnzyufaehs".to_string())
         );
         assert_eq!(
-            encrypt::gen_pass(&base_method),
+            encrypt::gen_pass(&base_method, None),
             Ok("dmFyaWFibGVwYXNz".to_string())
         );
-        assert_eq!(encrypt::gen_pass(&xor_method), Ok("dpyuheds".to_string()));
+        assert_eq!(
+            encrypt::gen_pass(&xor_method, None),
+            Ok("dpyuheds".to_string())
+        );
+
+        assert_eq!(
+            encrypt::gen_pass(&vige_method, Some(2)),
+            Ok("knqgugliws".to_string())
+        );
+        assert_eq!(
+            encrypt::gen_pass(&base_method, Some(2)),
+            Ok("ZG1GeWFXRmliR1Z3WVhOeg==".to_string())
+        );
+        assert_eq!(
+            encrypt::gen_pass(&xor_method, Some(2)),
+            Ok("srljhiw".to_string())
+        );
     }
 
     #[test]

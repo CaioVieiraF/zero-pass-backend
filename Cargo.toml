@@ -1,10 +1,10 @@
 [package]
 name = "zero_pass_backend"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["caio <wabros@protonmail.com>"]
 license = "GPL-3.0"
 description = "The Zero Pass Project brain"
-homepage = "https://github.com/CaioVieiraF/zero-pass-backend"
+homepage = "https://gitlab.com/zero-pass/zero-pass-backend"
 repository = "https://github.com/CaioVieiraF/zero-pass-backend"
 edition = "2018"
 

@@ -4,7 +4,7 @@ use crate::Methods;
 
 pub fn new(method: Methods) -> LoginData {
     LoginData {
-        cpw: encrypt::gen_pass(&method),
+        cpw: encrypt::gen_pass(&method, None),
         symetric_method: method,
     }
 }

@@ -38,7 +38,7 @@ pub fn xor(uw: &str, vw: &str) -> CipherResult {
         x += 1;
     }
 
-    let binary_vec: Vec<&str> = binary_pass.split(" ").collect();
+    let binary_vec: Vec<&str> = binary_pass.split(' ').collect();
     for i in binary_vec {
         let number = usize::from_str_radix(i, 2).unwrap();
         let val = match alphabet.as_bytes().get(number) {
