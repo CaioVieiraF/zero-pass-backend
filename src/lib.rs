@@ -44,6 +44,30 @@ mod tests {
     }
 
     #[test]
+    fn gen_for_methods_test() {
+        let data = encrypt::MethodArgs {
+            word: "uniquepass",
+            password: "variablepass",
+        };
+        let vige_method = Methods::Vigenere(data.clone());
+        let base_method = Methods::B64(data.clone());
+        //let xor_method = Methods::Xor(data.clone());
+
+        let mut methods_vec: Vec<&Methods> = Vec::new();
+        let mut methods_vec2: Vec<&Methods> = Vec::new();
+        methods_vec.push(&base_method);
+        methods_vec.push(&vige_method);
+
+        methods_vec2.push(&vige_method);
+        methods_vec2.push(&base_method);
+
+        let test = encrypt::gen_pass_for_methods(methods_vec, vec![None, None]);
+        let test2 = encrypt::gen_pass_for_methods(methods_vec2, vec![None, None]);
+        assert_eq!(test, Ok("ymwgaxqmqgnotxeh".to_string()));
+        assert_eq!(test2, Ok("cG56eXVmYWVocw==".to_string()));
+    }
+
+    #[test]
     fn gen_test() {
         let data = encrypt::MethodArgs {
             word: "uniquepass",
