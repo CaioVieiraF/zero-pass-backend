@@ -8,17 +8,50 @@ pub use base64::b64;
 pub use vigenere::vigenere;
 pub use xor::xor;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct MethodArgs<'a> {
     pub word: &'a str,
     pub password: &'a str,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum Methods<'a> {
     Vigenere(MethodArgs<'a>),
     B64(MethodArgs<'a>),
     Xor(MethodArgs<'a>),
+}
+
+pub fn gen_pass_for_methods(method_vec: Vec<&Methods>, repeat: Vec<Option<u8>>) -> CipherResult {
+    let methods = method_vec[0];
+    let (w, p) = match methods {
+        Methods::Vigenere(args) => (args.word, args.password),
+        Methods::B64(args) => (args.password, args.password),
+        Methods::Xor(args) => (args.word, args.password),
+    };
+
+    let mut result = Ok(String::from(w));
+
+    for (j, i) in method_vec.iter().enumerate() {
+        let word = result.unwrap();
+        let method = match i {
+            Methods::Vigenere(_) => Methods::Vigenere(MethodArgs {
+                word: &word,
+                password: p,
+            }),
+            Methods::B64(_) => Methods::B64(MethodArgs {
+                word: &word,
+                password: &word,
+            }),
+            Methods::Xor(_) => Methods::Xor(MethodArgs {
+                word: &word,
+                password: p,
+            }),
+        };
+
+        result = gen_pass(&method, repeat[j]);
+    }
+
+    result
 }
 
 pub fn gen_pass(method: &Methods, repeat: Option<u8>) -> CipherResult {
