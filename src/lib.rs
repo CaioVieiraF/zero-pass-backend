@@ -12,12 +12,6 @@ pub enum CipherError {
 
 pub type CipherResult = Result<String, CipherError>;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct LoginData<'a> {
-    symetric_method: Methods<'a>,
-    pub cpw: CipherResult,
-}
-
 pub fn get_methods<'a>() -> HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> {
     let mut methods: HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> = HashMap::new();
 
@@ -28,3 +22,5 @@ pub fn get_methods<'a>() -> HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> {
     methods
 }
 
+#[cfg(test)]
+mod tests;
