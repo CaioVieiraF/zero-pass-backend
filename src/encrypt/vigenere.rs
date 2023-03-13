@@ -2,29 +2,16 @@ use crate::{CipherError, CipherResult, Method};
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct Vigenere {
-    unique: &'static str,
-    variable: &'static str,
-}
+pub struct Vigenere;
 
 impl Method for Vigenere {
-
-    fn unique(self, word: &str) -> Vigenere {
-        Vigenere { unique: word, ..self }
-    }
-
-    fn variable(self, word: &str) -> Vigenere {
-        Vigenere { variable: word, ..self }
-    }
-
-    fn encrypt(self) -> CipherResult {
-
+    fn encrypt(&self, uw: impl Into<String>, vw: impl Into<String>) -> CipherResult {
         // Definition of the alphabet used
         let alphabet = "abcdefghijklmnopqrstuvwxyz";
 
         // Getting the unique variable pass
-        let unique: String = self.unique.to_lowercase();
-        let variable: String = self.variable.to_lowercase();
+        let unique: String = uw.into().to_lowercase();
+        let variable: String = vw.into().to_lowercase();
 
         // Creating the new pass and initializing it empity
         let mut new_pass = String::new();
@@ -34,11 +21,14 @@ impl Method for Vigenere {
 
         // Loop to set the new characters to the new password
         for c in unique.chars() {
-
             // Get the index of the current character on variable pass.
             // This formula is to get the value even when the unique pass length is larger than variable
             // pass length.
-            let variable_index = if i < variable.len() {i} else {i - (variable.len() * (i / variable.len() as usize))};
+            let variable_index = if i < variable.len() {
+                i
+            } else {
+                i - (variable.len() * (i / variable.len() as usize))
+            };
 
             // Just an alias for the alphabet lenght as a i8
             let alphabet_len = alphabet.len() as i8;
@@ -51,7 +41,7 @@ impl Method for Vigenere {
                 None => {
                     new_pass += &c.to_string();
                     continue;
-                },
+                }
             };
 
             // Get the index of the current variable pass character from the alphabet. If the character
@@ -68,7 +58,7 @@ impl Method for Vigenere {
             if position < 0 {
                 position += alphabet_len;
             }
-        
+
             // Get the new character on the alphabet.
             let new_character = alphabet.as_bytes()[position as usize] as char;
 
@@ -79,5 +69,3 @@ impl Method for Vigenere {
         Ok(new_pass)
     }
 }
-
-
