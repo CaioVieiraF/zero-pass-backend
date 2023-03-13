@@ -1,4 +1,14 @@
-use crate::CipherResult;
+use crate::{CipherResult, Method};
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct Xor;
+
+impl Method for Xor {
+    fn encrypt(&self) -> CipherResult {
+        Ok(String::new())
+    }
+}
 
 pub fn xor(uw: &str, vw: &str) -> CipherResult {
     let alphabet = "abcdefghijklmnopqrstuvwxyz";

@@ -1,8 +1,6 @@
-use crate::encrypt::{MethodArgs, Methods};
-use std::collections::HashMap;
+use crate::encrypt::*;
 
 pub mod encrypt;
-pub mod login_data;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CipherError {
@@ -12,12 +10,12 @@ pub enum CipherError {
 
 pub type CipherResult = Result<String, CipherError>;
 
-pub fn get_methods<'a>() -> HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> {
-    let mut methods: HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> = HashMap::new();
-
-    methods.insert(String::from("Vigenere"), Methods::Vigenere);
-    methods.insert(String::from("Base64"), Methods::B64);
-    methods.insert(String::from("Xor"), Methods::Xor);
+pub fn get_methods() -> Vec<String> {
+    let methods: Vec<String> = vec![
+        serde_json::to_string(&Vigenere {}).unwrap(),
+        serde_json::to_string(&B64 {}).unwrap(),
+        serde_json::to_string(&Xor {}).unwrap(),
+    ];
 
     methods
 }

@@ -84,36 +84,3 @@ fn hashmap_test<'a>() {
     }
 }
 
-#[test]
-fn login_test() {
-    let data = encrypt::MethodArgs {
-        word: "uniquepass",
-        password: "variablepass",
-    };
-
-    let vige_method = Methods::Vigenere(data.clone());
-    let base_method = Methods::B64(data.clone());
-    let xor_method = Methods::Xor(data.clone());
-
-    assert_eq!(
-        login_data::new(vige_method.clone()),
-        login_data::LoginData {
-            symetric_method: vige_method.clone(),
-            cpw: Ok("pnzyufaehs".to_string())
-        }
-    );
-    assert_eq!(
-        login_data::new(base_method.clone()),
-        login_data::LoginData {
-            symetric_method: base_method.clone(),
-            cpw: Ok("dmFyaWFibGVwYXNz".to_string())
-        }
-    );
-    assert_eq!(
-        login_data::new(xor_method.clone()),
-        login_data::LoginData {
-            symetric_method: xor_method.clone(),
-            cpw: Ok("dpyuheds".to_string())
-        }
-    );
-}

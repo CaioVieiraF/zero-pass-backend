@@ -4,91 +4,73 @@ pub mod xor;
 
 use crate::CipherResult;
 
-pub use base64::b64;
-pub use vigenere::vigenere;
-pub use xor::xor;
+pub use base64::B64;
+pub use vigenere::Vigenere;
+pub use xor::Xor;
 
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub struct MethodArgs<'a> {
-    pub word: &'a str,
-    pub password: &'a str,
+use std::default::Default;
+
+pub struct PasswordBuilder {
+    unique: Option<&'static str>,
+    variable: Option<&'static str>,
+    repeat: Option<u8>,
+    new_pass: CipherResult,
 }
 
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub enum Methods<'a> {
-    Vigenere(MethodArgs<'a>),
-    B64(MethodArgs<'a>),
-    Xor(MethodArgs<'a>),
+pub trait Method {
+    fn encrypt(self) -> CipherResult;
+    fn unique(self, word: &str) -> Self;
+    fn variable(self, word:  &str) -> Self;
 }
 
-pub fn gen_pass_for_methods(method_vec: Vec<&Methods>, repeat: Vec<Option<u8>>) -> CipherResult {
-    let methods = method_vec[0];
-    let (w, p) = match methods {
-        Methods::Vigenere(args) => (args.word, args.password),
-        Methods::B64(args) => (args.password, args.password),
-        Methods::Xor(args) => (args.word, args.password),
-    };
-
-    let mut result = Ok(String::from(w));
-
-    for (j, i) in method_vec.iter().enumerate() {
-        let word = result.unwrap();
-        let method = match i {
-            Methods::Vigenere(_) => Methods::Vigenere(MethodArgs {
-                word: &word,
-                password: p,
-            }),
-            Methods::B64(_) => Methods::B64(MethodArgs {
-                word: &word,
-                password: &word,
-            }),
-            Methods::Xor(_) => Methods::Xor(MethodArgs {
-                word: &word,
-                password: p,
-            }),
-        };
-
-        result = gen_pass(&method, repeat[j]);
-    }
-
-    result
-}
-
-pub fn gen_pass(method: &Methods, repeat: Option<u8>) -> CipherResult {
-    let encryption_layers = match repeat {
-        Some(i) => {
-            if i < 1 {
-                1
-            } else {
-                i
-            }
-        }
-        None => 1,
-    };
-    let mut result: CipherResult = Ok(String::new());
-
-    for _ in 0..encryption_layers {
-        result = match method {
-            Methods::Vigenere(args) => {
-                if result == Ok(String::new()) {
-                    result = Ok(args.word.to_owned());
-                }
-                vigenere(result.unwrap().as_str(), args.password)
-            }
-            Methods::B64(args) => {
-                if result == Ok(String::new()) {
-                    result = Ok(args.password.to_owned());
-                }
-                b64(result.unwrap().as_str())
-            }
-            Methods::Xor(args) => {
-                if result == Ok(String::new()) {
-                    result = Ok(args.word.to_owned());
-                }
-                xor(result.unwrap().as_str(), args.password)
-            }
+impl Default for PasswordBuilder {
+    fn default() -> Self {
+        PasswordBuilder {
+            unique: None,
+            variable: None,
+            repeat: None,
+            new_pass: Ok(String::new()),
         }
     }
-
-    result
 }
+
+impl PasswordBuilder {
+    pub fn new() -> PasswordBuilder {
+        Default::default()
+    }
+
+    pub fn unique(mut self, word: impl Into<&'static str>) -> Self {
+        self.unique = Some(word.into());
+        self
+    }
+
+    pub fn variable(mut self, word: impl Into<&'static str>) -> Self {
+        self.variable = Some(word.into());
+        self
+    }
+
+    pub fn repeat(mut self, number: impl Into<u8>) -> Self {
+        self.repeat = Some(number.into());
+        self
+    }
+
+    pub fn method(mut self, method: &impl Method) -> Self {
+
+        let mut repeat = match self.repeat {Some(r) => r, None => 1};
+        if repeat == 0 { repeat = 1 as u8; }
+
+        for _ in 0..repeat {
+            let new_pass: CipherResult = method.encrypt();
+            if new_pass.is_ok() {
+                self.unique = Some(&self.new_pass.unwrap().clone())
+            }
+        }
+
+        self
+    }
+
+    pub fn build(self) -> CipherResult {
+        self.new_pass
+    }
+}
+

@@ -1,4 +1,27 @@
-use crate::{CipherError, CipherResult};
+use crate::{CipherError, CipherResult, Method};
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct B64 {
+    variable: Option<&'static str>,
+}
+
+
+
+impl Method for B64{
+
+    fn unique(self, _word: &str) -> B64 {
+        self
+    }
+
+    fn variable(self, word: &str) -> B64 {
+        B64 { variable: Some(word) }
+    }
+
+    fn encrypt(self) -> CipherResult {
+        Ok(String::new())
+    }
+}
 
 pub fn b64(vw: &str) -> CipherResult {
     let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
