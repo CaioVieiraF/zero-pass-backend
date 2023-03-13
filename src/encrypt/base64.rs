@@ -2,11 +2,11 @@ use crate::{CipherError, CipherResult, Method};
 use serde::Serialize;
 
 #[derive(Serialize)]
-pub struct B64;
+pub struct Base64;
 
-impl Method for B64 {
-    fn encrypt(&self, _uw: impl Into<String>, vw: impl Into<String>) -> CipherResult {
-        let vw = vw.into();
+impl Method for Base64 {
+    fn encrypt(&self, uw: impl Into<String>, _vw: impl Into<String>) -> CipherResult {
+        let vw = uw.into();
         let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         let mut binary_word = "".to_string();
         let mut new_pass = String::new();

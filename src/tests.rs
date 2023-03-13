@@ -5,82 +5,78 @@ fn methods_test() {
     let uw: String = String::from("uniquepass");
     let vw: String = String::from("variablepass");
 
-    assert_eq!(encrypt::vigenere(&uw, &vw), Ok("pnzyufaehs".to_string()));
-    assert_eq!(encrypt::b64(&vw), Ok("dmFyaWFibGVwYXNz".to_string()));
-    assert_eq!(encrypt::xor(&uw, &vw), Ok("dpyuheds".to_string()));
+    assert_eq!(
+        encrypt::Vigenere.encrypt(&uw, &vw),
+        Ok("pnzyufaehs".to_string())
+    );
+    assert_eq!(
+        encrypt::Base64.encrypt(&uw, &vw),
+        Ok("dW5pcXVlcGFzcw==".to_string())
+    );
+    assert_eq!(encrypt::Xor.encrypt(&uw, &vw), Ok("dpyuheds".to_string()));
 }
 
 #[test]
 fn gen_for_methods_test() {
-    let data = encrypt::MethodArgs {
-        word: "uniquepass",
-        password: "variablepass",
-    };
-    let vige_method = Methods::Vigenere(data.clone());
-    let base_method = Methods::B64(data.clone());
+    let builder = encrypt::PasswordBuilder::new()
+        .unique("uniquepass")
+        .variable("variablepass");
+    let vige_method = Vigenere;
+    let base_method = Base64;
     //let xor_method = Methods::Xor(data.clone());
 
-    let mut methods_vec: Vec<&Methods> = Vec::new();
-    let mut methods_vec2: Vec<&Methods> = Vec::new();
-    methods_vec.push(&base_method);
-    methods_vec.push(&vige_method);
-
-    methods_vec2.push(&vige_method);
-    methods_vec2.push(&base_method);
-
-    let test = encrypt::gen_pass_for_methods(methods_vec, vec![None, None]);
-    let test2 = encrypt::gen_pass_for_methods(methods_vec2, vec![None, None]);
-    assert_eq!(test, Ok("ymwgaxqmqgnotxeh".to_string()));
-    assert_eq!(test2, Ok("cG56eXVmYWVocw==".to_string()));
+    assert_eq!(
+        builder
+            .clone()
+            .method(&base_method)
+            .method(&vige_method)
+            .build(),
+        Ok("yw5gkxwwgvfrur==".to_string())
+    );
+    assert_eq!(
+        builder
+            .clone()
+            .method(&vige_method)
+            .method(&base_method)
+            .build(),
+        Ok("cG56eXVmYWVocw==".to_string())
+    );
 }
 
 #[test]
 fn gen_test() {
-    let data = encrypt::MethodArgs {
-        word: "uniquepass",
-        password: "variablepass",
-    };
-    let vige_method = Methods::Vigenere(data.clone());
-    let base_method = Methods::B64(data.clone());
-    let xor_method = Methods::Xor(data.clone());
+    let builder = encrypt::PasswordBuilder::new()
+        .unique("uniquepass")
+        .variable("variablepass");
+    let vige_method = Vigenere;
+    let base_method = Base64;
+    let xor_method = Xor;
 
     assert_eq!(
-        encrypt::gen_pass(&vige_method, None),
+        builder.clone().method(&vige_method).build(),
         Ok("pnzyufaehs".to_string())
     );
     assert_eq!(
-        encrypt::gen_pass(&base_method, None),
-        Ok("dmFyaWFibGVwYXNz".to_string())
+        builder.clone().method(&base_method).build(),
+        Ok("dW5pcXVlcGFzcw==".to_string())
     );
     assert_eq!(
-        encrypt::gen_pass(&xor_method, None),
+        builder.clone().method(&xor_method).build(),
         Ok("dpyuheds".to_string())
     );
 
+    let repeat_builder = builder.repeat(2);
+
     assert_eq!(
-        encrypt::gen_pass(&vige_method, Some(2)),
+        repeat_builder.clone().method(&vige_method).build(),
         Ok("knqgugliws".to_string())
     );
     assert_eq!(
-        encrypt::gen_pass(&base_method, Some(2)),
+        repeat_builder.clone().method(&base_method).build(),
         Ok("ZG1GeWFXRmliR1Z3WVhOeg==".to_string())
     );
     assert_eq!(
-        encrypt::gen_pass(&xor_method, Some(2)),
+        repeat_builder.clone().method(&xor_method).build(),
         Ok("srljhiw".to_string())
     );
 }
-
-#[test]
-fn hashmap_test<'a>() {
-    let methods: HashMap<String, fn(MethodArgs<'a>) -> Methods<'a>> = crate::get_methods();
-
-    for (key, _) in methods.iter() {
-        let get_func = methods.get(key).unwrap();
-        let _method: Methods = get_func(MethodArgs {
-            word: "a",
-            password: "b",
-        });
-    }
-}
-

@@ -4,12 +4,13 @@ pub mod xor;
 
 use crate::CipherResult;
 
-pub use base64::B64;
+pub use base64::Base64;
 pub use vigenere::Vigenere;
 pub use xor::Xor;
 
 use std::default::Default;
 
+#[derive(Clone)]
 pub struct PasswordBuilder {
     unique: Option<String>,
     variable: Option<String>,
@@ -64,9 +65,12 @@ impl PasswordBuilder {
         for _ in 0..repeat {
             let uw = self.unique.clone().unwrap();
             let vw = self.variable.clone().unwrap();
+
             let new_pass: CipherResult = method.encrypt(&uw, &vw);
+
             if new_pass.is_ok() {
-                self.unique = Some(new_pass.unwrap().clone())
+                self.unique = Some(new_pass.clone().unwrap());
+                self.new_pass = Some(new_pass);
             }
         }
 

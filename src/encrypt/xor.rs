@@ -56,8 +56,6 @@ impl Method for Xor {
             new_pass += &(*val as char).to_string();
         }
 
-        println!("{:?}", binary_pass);
-
         Ok(new_pass)
     }
 }
