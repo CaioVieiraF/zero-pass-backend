@@ -26,16 +26,20 @@ fn gen_for_methods_test() {
     assert_eq!(
         builder
             .clone()
-            .method(Base64).unwrap()
-            .method(Vigenere).unwrap()
+            .method(Base64)
+            .unwrap()
+            .method(Vigenere)
+            .unwrap()
             .build(),
         "yw5gkxwwgvfrur=="
     );
     assert_eq!(
         builder
             .clone()
-            .method(Vigenere).unwrap()
-            .method(Base64).unwrap()
+            .method(Vigenere)
+            .unwrap()
+            .method(Base64)
+            .unwrap()
             .build(),
         "cG56eXVmYWVocw=="
     );
@@ -55,11 +59,7 @@ fn gen_test() {
         builder.clone().method(Base64).unwrap().build(),
         "dW5pcXVlcGFzcw=="
     );
-    assert_eq!(
-        builder.clone().method(Xor).unwrap().build(),
-        "dpyuheds"
-    );
-
+    assert_eq!(builder.clone().method(Xor).unwrap().build(), "dpyuheds");
 }
 
 #[test]
@@ -69,25 +69,15 @@ fn gen_repeat_pass() {
         .variable("variablepass");
 
     assert_eq!(
-        builder.clone()
-            .repeat(2)
-            .method(Vigenere).unwrap()
-            .build(),
+        builder.clone().repeat(2).method(Vigenere).unwrap().build(),
         "knqgugliws"
     );
     assert_eq!(
-        builder.clone()
-            .repeat(2)    
-            .method(Base64).unwrap()
-            .build(),
+        builder.clone().repeat(2).method(Base64).unwrap().build(),
         "ZG1GeWFXRmliR1Z3WVhOeg=="
     );
     assert_eq!(
-        builder.clone()
-            .repeat(2)
-            .method(Xor).unwrap()
-            .build(),
+        builder.clone().repeat(2).method(Xor).unwrap().build(),
         "srljhiw"
     );
-
 }
