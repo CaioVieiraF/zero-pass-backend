@@ -1,7 +1,7 @@
 use crate::{CipherResult, Method};
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct Xor;
 
 impl Method for Xor {

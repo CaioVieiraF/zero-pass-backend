@@ -21,25 +21,23 @@ fn gen_for_methods_test() {
     let builder = encrypt::PasswordBuilder::new()
         .unique("uniquepass")
         .variable("variablepass");
-    let vige_method = Vigenere;
-    let base_method = Base64;
     //let xor_method = Methods::Xor(data.clone());
 
     assert_eq!(
         builder
             .clone()
-            .method(&base_method)
-            .method(&vige_method)
+            .method(Base64).unwrap()
+            .method(Vigenere).unwrap()
             .build(),
-        Ok("yw5gkxwwgvfrur==".to_string())
+        "yw5gkxwwgvfrur=="
     );
     assert_eq!(
         builder
             .clone()
-            .method(&vige_method)
-            .method(&base_method)
+            .method(Vigenere).unwrap()
+            .method(Base64).unwrap()
             .build(),
-        Ok("cG56eXVmYWVocw==".to_string())
+        "cG56eXVmYWVocw=="
     );
 }
 
@@ -48,35 +46,48 @@ fn gen_test() {
     let builder = encrypt::PasswordBuilder::new()
         .unique("uniquepass")
         .variable("variablepass");
-    let vige_method = Vigenere;
-    let base_method = Base64;
-    let xor_method = Xor;
 
     assert_eq!(
-        builder.clone().method(&vige_method).build(),
-        Ok("pnzyufaehs".to_string())
+        builder.clone().method(Vigenere).unwrap().build(),
+        "pnzyufaehs"
     );
     assert_eq!(
-        builder.clone().method(&base_method).build(),
-        Ok("dW5pcXVlcGFzcw==".to_string())
+        builder.clone().method(Base64).unwrap().build(),
+        "dW5pcXVlcGFzcw=="
     );
     assert_eq!(
-        builder.clone().method(&xor_method).build(),
-        Ok("dpyuheds".to_string())
+        builder.clone().method(Xor).unwrap().build(),
+        "dpyuheds"
     );
 
-    let repeat_builder = builder.repeat(2);
+}
+
+#[test]
+fn gen_repeat_pass() {
+    let builder = encrypt::PasswordBuilder::new()
+        .unique("uniquepass")
+        .variable("variablepass");
 
     assert_eq!(
-        repeat_builder.clone().method(&vige_method).build(),
-        Ok("knqgugliws".to_string())
+        builder.clone()
+            .repeat(2)
+            .method(Vigenere).unwrap()
+            .build(),
+        "knqgugliws"
     );
     assert_eq!(
-        repeat_builder.clone().method(&base_method).build(),
-        Ok("ZG1GeWFXRmliR1Z3WVhOeg==".to_string())
+        builder.clone()
+            .repeat(2)    
+            .method(Base64).unwrap()
+            .build(),
+        "ZG1GeWFXRmliR1Z3WVhOeg=="
     );
     assert_eq!(
-        repeat_builder.clone().method(&xor_method).build(),
-        Ok("srljhiw".to_string())
+        builder.clone()
+            .repeat(2)
+            .method(Xor).unwrap()
+            .build(),
+        "srljhiw"
     );
+
 }

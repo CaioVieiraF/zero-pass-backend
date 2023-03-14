@@ -2,7 +2,7 @@ pub mod base64;
 pub mod vigenere;
 pub mod xor;
 
-use crate::CipherResult;
+use crate::{CipherResult, CipherError};
 
 pub use base64::Base64;
 pub use vigenere::Vigenere;
@@ -15,7 +15,6 @@ pub struct PasswordBuilder {
     unique: Option<String>,
     variable: Option<String>,
     repeat: Option<u8>,
-    new_pass: Option<CipherResult>,
 }
 
 pub trait Method {
@@ -28,7 +27,6 @@ impl Default for PasswordBuilder {
             unique: None,
             variable: None,
             repeat: None,
-            new_pass: None,
         }
     }
 }
@@ -50,10 +48,13 @@ impl PasswordBuilder {
 
     pub fn repeat(mut self, number: impl Into<u8>) -> Self {
         self.repeat = Some(number.into());
+
         self
     }
 
-    pub fn method(mut self, method: &impl Method) -> Self {
+    pub fn method(mut self, method: impl Method) -> Result<Self, CipherError> {
+        let vw = self.variable.clone().unwrap();
+        
         let mut repeat = match self.repeat {
             Some(r) => r,
             None => 1,
@@ -63,21 +64,18 @@ impl PasswordBuilder {
         }
 
         for _ in 0..repeat {
-            let uw = self.unique.clone().unwrap();
-            let vw = self.variable.clone().unwrap();
-
-            let new_pass: CipherResult = method.encrypt(&uw, &vw);
-
-            if new_pass.is_ok() {
-                self.unique = Some(new_pass.clone().unwrap());
-                self.new_pass = Some(new_pass);
-            }
+            let uw = self.unique.unwrap();
+            let new_pass = method.encrypt(&uw, &vw)?;
+            
+            self.unique = Some(new_pass);
         }
+        
+        self.repeat = None;
 
-        self
+        Ok(self)
     }
 
-    pub fn build(self) -> CipherResult {
-        self.new_pass.unwrap()
+    pub fn build(self) -> String {
+        self.unique.unwrap()
     }
 }

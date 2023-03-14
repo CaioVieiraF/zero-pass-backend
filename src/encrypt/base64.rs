@@ -1,7 +1,7 @@
 use crate::{CipherError, CipherResult, Method};
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 pub struct Base64;
 
 impl Method for Base64 {
