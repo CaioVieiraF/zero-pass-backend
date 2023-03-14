@@ -1,15 +1,19 @@
+// Exposing encryption methods.
 pub mod base64;
 pub mod vigenere;
 pub mod xor;
-
-use crate::{CipherError, CipherResult};
-
 pub use base64::Base64;
 pub use vigenere::Vigenere;
 pub use xor::Xor;
 
-use std::default::Default;
+// Bringing errors to scope.
+use crate::{CipherError, CipherResult};
 
+// Using standard library's traits.
+use std::default::Default;
+use std::str::FromStr;
+
+// Setting States for the PasswordBuilder
 #[derive(Default, Clone)]
 pub struct NoUnique;
 #[derive(Default, Clone)]
@@ -19,6 +23,7 @@ pub struct NoVariable;
 #[derive(Default, Clone)]
 pub struct Variable(String);
 
+/// Definines the password builder that implements default values and can be cloned.
 #[derive(Clone, Default)]
 pub struct PasswordBuilder<U, V> {
     unique: U,
@@ -26,17 +31,22 @@ pub struct PasswordBuilder<U, V> {
     repeat: Option<u8>,
 }
 
+/// Defines method encryption trait.
 pub trait Method {
     fn encrypt(&self, uw: impl Into<String>, vw: impl Into<String>) -> CipherResult;
 }
 
+/// Implementation of PasswordBuilder when nothing is set yet.
 impl PasswordBuilder<NoUnique, NoVariable> {
     pub fn new() -> Self {
         Default::default()
     }
 }
 
+/// Implementation of PasswordBuilder when it is already instantiated.
 impl<U, V> PasswordBuilder<U, V> {
+
+    /// Sets the unique word to build the passoword.
     pub fn unique(self, word: impl Into<String>) -> PasswordBuilder<Unique, V> {
         PasswordBuilder {
             unique: Unique(word.into()),
@@ -45,6 +55,7 @@ impl<U, V> PasswordBuilder<U, V> {
         }
     }
 
+    /// Sets the variable word to build the password.
     pub fn variable(self, word: impl Into<String>) -> PasswordBuilder<U, Variable> {
         PasswordBuilder {
             unique: self.unique,
@@ -54,14 +65,18 @@ impl<U, V> PasswordBuilder<U, V> {
     }
 }
 
+/// Implementation of PasswordBuilder when "unique" and "variable" fields are set.
 impl PasswordBuilder<Unique, Variable> {
+
+    /// Sets a number of repetitions to use on the following specified method.
     pub fn repeat(mut self, number: impl Into<u8>) -> Self {
         self.repeat = Some(number.into());
 
         self
     }
 
-    pub fn method(mut self, method: impl Method) -> Result<Self, CipherError> {
+    /// Generates a password based on a method. Can be chained with multiple methods.
+    pub fn method(mut self, method: impl Method + FromStr) -> Result<Self, CipherError> {
         let vw = self.variable.0.clone();
 
         let mut repeat = match self.repeat {
