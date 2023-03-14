@@ -11,7 +11,7 @@ fn methods_test() {
     );
     assert_eq!(
         encrypt::Base64.encrypt(&uw, &vw),
-        Ok("dW5pcXVlcGFzcw==".to_string())
+        Ok("dW5pcXVlcGFzcw".to_string())
     );
     assert_eq!(encrypt::Xor.encrypt(&uw, &vw), Ok("dpyuheds".to_string()));
 }
@@ -31,7 +31,7 @@ fn gen_for_methods_test() {
             .method(Vigenere)
             .unwrap()
             .build(),
-        "yw5gkxwwgvfrur=="
+        "yw5gkxwwgvfrur"
     );
     assert_eq!(
         builder
@@ -41,7 +41,7 @@ fn gen_for_methods_test() {
             .method(Base64)
             .unwrap()
             .build(),
-        "cG56eXVmYWVocw=="
+        "cG56eXVmYWVocw"
     );
 }
 
@@ -57,7 +57,7 @@ fn gen_test() {
     );
     assert_eq!(
         builder.clone().method(Base64).unwrap().build(),
-        "dW5pcXVlcGFzcw=="
+        "dW5pcXVlcGFzcw"
     );
     assert_eq!(builder.clone().method(Xor).unwrap().build(), "dpyuheds");
 }
@@ -74,7 +74,7 @@ fn gen_repeat_pass() {
     );
     assert_eq!(
         builder.clone().repeat(2).method(Base64).unwrap().build(),
-        "ZG1GeWFXRmliR1Z3WVhOeg=="
+        "ZFc1cGNYVmxjR0Z6Y3c"
     );
     assert_eq!(
         builder.clone().repeat(2).method(Xor).unwrap().build(),

@@ -1,6 +1,7 @@
 use crate::{CipherError, CipherResult, Method};
 use serde::Serialize;
 use std::str::FromStr;
+use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Serialize, Clone)]
 pub struct Base64;
@@ -20,44 +21,49 @@ impl FromStr for Base64 {
 impl Method for Base64 {
     fn encrypt(&self, uw: impl Into<String>, _vw: impl Into<String>) -> CipherResult {
         let vw = uw.into();
-        let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        let mut binary_word = "".to_string();
-        let mut new_pass = String::new();
+        let vw_as_bytes = vw.as_bytes();
+        let encoded: String = general_purpose::STANDARD_NO_PAD.encode(vw_as_bytes);
 
-        for i in vw.chars() {
-            if !alphabet.contains(i) {
-                return Err(CipherError::InvalidCharacterError);
-            }
-        }
+        Ok(encoded)
+        // let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        // let vw: String = uw.into().chars().filter_map(|c| alphabet.contains(c).then_some(c)).collect();
+        // let mut binary_word = "".to_string();
+        // let mut new_pass = String::new();
 
-        for i in &mut (*vw).bytes() {
-            binary_word += &format!("0{:b}", i);
-        }
+        // for i in vw.chars() {
+        //     if !alphabet.contains(i) {
+        //         return Err(CipherError::InvalidCharacterError);
+        //     }
+        // }
 
-        let mut padding = "".to_string();
-        while binary_word.len() % 6 != 0 {
-            binary_word += "00";
-            padding += "=";
-        }
+        // for i in &mut (*vw).bytes() {
+        //     binary_word += &format!("0{:b}", i);
+        // }
 
-        let mut x = 0;
-        let mut new_binary = String::new();
-        for i in binary_word.chars() {
-            if x == 6 {
-                new_binary += " ";
-                x = 0
-            }
-            new_binary += &i.to_string();
-            x += 1;
-        }
+        // let mut padding = "".to_string();
+        // while binary_word.len() % 6 != 0 {
+        //     binary_word += "00";
+        //     padding += "=";
+        // }
 
-        let binary_vec: Vec<&str> = new_binary.split(' ').collect();
-        for i in binary_vec {
-            let number = usize::from_str_radix(i, 2).unwrap();
-            new_pass += &(alphabet.as_bytes()[number] as char).to_string();
-        }
+        // let mut x = 0;
+        // let mut new_binary = String::new();
+        // for i in binary_word.chars() {
+        //     if x == 6 {
+        //         new_binary += " ";
+        //         x = 0
+        //     }
+        //     new_binary += &i.to_string();
+        //     x += 1;
+        // }
 
-        new_pass += &padding;
-        Ok(new_pass)
+        // let binary_vec: Vec<&str> = new_binary.split(' ').collect();
+        // for i in binary_vec {
+        //     let number = usize::from_str_radix(i, 2).unwrap();
+        //     new_pass += &(alphabet.as_bytes()[number] as char).to_string();
+        // }
+
+        // new_pass += &padding;
+        // Ok(new_pass)
     }
 }

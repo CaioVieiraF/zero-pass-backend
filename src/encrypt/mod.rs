@@ -2,7 +2,7 @@
 pub mod base64;
 pub mod vigenere;
 pub mod xor;
-pub use base64::Base64;
+pub use self::base64::Base64;
 pub use vigenere::Vigenere;
 pub use xor::Xor;
 
