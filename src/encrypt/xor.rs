@@ -1,8 +1,22 @@
-use crate::{CipherResult, Method};
+use crate::{CipherResult, Method, CipherError};
 use serde::Serialize;
+
+use std::str::FromStr;
 
 #[derive(Serialize, Clone)]
 pub struct Xor;
+
+impl FromStr for Xor {
+    type Err = CipherError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        if input.to_uppercase() == "XOR" {
+            Ok(Xor)
+        } else {
+            Err(CipherError::InvalidMethodError)
+        }
+    }
+}
 
 impl Method for Xor {
     fn encrypt(&self, uw: impl Into<String>, vw: impl Into<String>) -> CipherResult {

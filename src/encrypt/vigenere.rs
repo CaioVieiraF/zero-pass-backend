@@ -1,8 +1,23 @@
 use crate::{CipherError, CipherResult, Method};
 use serde::Serialize;
+use std::str::FromStr;
 
 #[derive(Serialize, Clone)]
 pub struct Vigenere;
+
+impl FromStr for Vigenere {
+    type Err = CipherError;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        if input.to_uppercase() == "VIGENERE" {
+            Ok(Vigenere)
+        } else {
+            Err(CipherError::InvalidMethodError)
+        }
+    }
+
+
+}
 
 impl Method for Vigenere {
     fn encrypt(&self, uw: impl Into<String>, vw: impl Into<String>) -> CipherResult {
