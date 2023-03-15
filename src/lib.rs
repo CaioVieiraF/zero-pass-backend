@@ -8,26 +8,22 @@ pub enum CipherError {
     InvalidMethodError,
 }
 
-pub enum Methods {
-    Vigenere(Vigenere),
-    Base64(Base64),
-    Xor(Xor),
-}
+pub struct Methods;
 
 pub type CipherResult = Result<String, CipherError>;
 
 impl Methods {
-    pub fn get_methods() -> Vec<String> {
-        let methods: Vec<String> = vec![
-            serde_json::to_string(&Vigenere).unwrap(),
-            serde_json::to_string(&Base64).unwrap(),
-            serde_json::to_string(&Xor).unwrap(),
+    pub fn get_methods() -> Vec<&'static str> {
+        let methods = vec![
+            "Vigenere",
+            "Base64",
+            "Xor",
         ];
 
         methods
     }
 
-    pub fn get_method(self, text: impl Into<String>) -> Result<Box<dyn Method>, CipherError> {
+    pub fn get_method(text: impl Into<String>) -> Result<Box<dyn Method>, CipherError> {
         let text = text.into();
 
         if let Ok(v) = text.parse::<Vigenere>() {

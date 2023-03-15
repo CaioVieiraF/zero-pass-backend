@@ -2,7 +2,7 @@ use crate::{CipherError, CipherResult, Method};
 use serde::Serialize;
 use std::str::FromStr;
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Base64;
 
 impl FromStr for Base64 {

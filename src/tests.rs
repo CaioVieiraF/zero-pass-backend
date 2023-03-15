@@ -81,3 +81,17 @@ fn gen_repeat_pass() {
         "srljhiw"
     );
 }
+
+#[test]
+fn get_methods() {
+    let methods = Methods::get_methods();
+    println!("{:?}", methods);
+
+    assert_eq!(methods[0], "Vigenere");
+
+    let method = Methods::get_method(methods[1]);
+    let method = method.unwrap();
+
+    let base = method.encrypt("uniquepass".to_string(), "variablepass");
+    assert_eq!(base, Ok("dW5pcXVlcGFzcw==".to_string()))
+}

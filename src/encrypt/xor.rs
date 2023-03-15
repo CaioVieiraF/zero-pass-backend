@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use std::str::FromStr;
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Xor;
 
 impl FromStr for Xor {
