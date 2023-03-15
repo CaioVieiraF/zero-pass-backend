@@ -11,7 +11,6 @@ use crate::{CipherError, CipherResult};
 
 // Using standard library's traits.
 use std::default::Default;
-use std::str::FromStr;
 
 // Setting States for the PasswordBuilder
 #[derive(Default, Clone)]
@@ -74,7 +73,7 @@ impl PasswordBuilder<Unique, Variable> {
     }
 
     /// Generates a password based on a method. Can be chained with multiple methods.
-    pub fn method(mut self, method: impl Method + FromStr) -> Result<Self, CipherError> {
+    pub fn method(mut self, method: impl Method) -> Result<Self, CipherError> {
         let vw = self.variable.0;
 
         let mut repeat = self.repeat.unwrap_or(1);
