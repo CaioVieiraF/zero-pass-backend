@@ -15,8 +15,6 @@ impl FromStr for Vigenere {
             Err(CipherError::InvalidMethodError)
         }
     }
-
-
 }
 
 impl Method for Vigenere {
@@ -42,7 +40,7 @@ impl Method for Vigenere {
             let variable_index = if i < variable.len() {
                 i
             } else {
-                i - (variable.len() * (i / variable.len() as usize))
+                i - (variable.len() * (i / variable.len()))
             };
 
             // Just an alias for the alphabet lenght as a i8
@@ -66,7 +64,6 @@ impl Method for Vigenere {
                 Some(v) => v as i8,
                 None => return Err(CipherError::InvalidCharacterError),
             };
-            drop(variable_index);
 
             // Get the index of the new charater on the alphabet based on the unique and variable pass.
             let mut position = pos_u - alphabet_len + pos_v;

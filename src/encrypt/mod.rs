@@ -45,13 +45,12 @@ impl PasswordBuilder<NoUnique, NoVariable> {
 
 /// Implementation of PasswordBuilder when it is already instantiated.
 impl<U, V> PasswordBuilder<U, V> {
-
     /// Sets the unique word to build the passoword.
     pub fn unique(self, word: impl Into<String>) -> PasswordBuilder<Unique, V> {
         PasswordBuilder {
             unique: Unique(word.into()),
             variable: self.variable,
-            repeat: self.repeat
+            repeat: self.repeat,
         }
     }
 
@@ -67,7 +66,6 @@ impl<U, V> PasswordBuilder<U, V> {
 
 /// Implementation of PasswordBuilder when "unique" and "variable" fields are set.
 impl PasswordBuilder<Unique, Variable> {
-
     /// Sets a number of repetitions to use on the following specified method.
     pub fn repeat(mut self, number: impl Into<u8>) -> Self {
         self.repeat = Some(number.into());
@@ -79,12 +77,9 @@ impl PasswordBuilder<Unique, Variable> {
     pub fn method(mut self, method: impl Method + FromStr) -> Result<Self, CipherError> {
         let vw = self.variable.0.clone();
 
-        let mut repeat = match self.repeat {
-            Some(r) => r,
-            None => 1,
-        };
+        let mut repeat = self.repeat.unwrap_or(1);
         if repeat == 0 {
-            repeat = 1 as u8;
+            repeat = 1_u8;
         }
 
         for _ in 0..repeat {
@@ -102,5 +97,4 @@ impl PasswordBuilder<Unique, Variable> {
     pub fn build(self) -> String {
         self.unique.0
     }
-
 }

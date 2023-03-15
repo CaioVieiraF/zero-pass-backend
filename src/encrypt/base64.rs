@@ -1,7 +1,7 @@
 use crate::{CipherError, CipherResult, Method};
+use base64::{engine::general_purpose, Engine as _};
 use serde::Serialize;
 use std::str::FromStr;
-use base64::{Engine as _, engine::general_purpose};
 
 #[derive(Serialize, Clone)]
 pub struct Base64;
@@ -21,8 +21,7 @@ impl FromStr for Base64 {
 impl Method for Base64 {
     fn encrypt(&self, uw: impl Into<String>, _vw: impl Into<String>) -> CipherResult {
         let vw = uw.into();
-        let vw_as_bytes = vw.as_bytes();
-        let encoded: String = general_purpose::STANDARD_NO_PAD.encode(vw_as_bytes);
+        let encoded: String = general_purpose::STANDARD_NO_PAD.encode(vw.as_bytes());
 
         Ok(encoded)
         // let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

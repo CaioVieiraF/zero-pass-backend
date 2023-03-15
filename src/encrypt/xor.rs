@@ -1,4 +1,4 @@
-use crate::{CipherResult, Method, CipherError};
+use crate::{CipherError, CipherResult, Method};
 use serde::Serialize;
 
 use std::str::FromStr;
@@ -44,7 +44,7 @@ impl Method for Xor {
             }
             let uw_val = &(binary_uw_word.as_bytes()[{
                 if i > binary_uw_word.len() - 1 {
-                    i - (binary_uw_word.len() * (i / binary_uw_word.len() as usize))
+                    i - (binary_uw_word.len() * (i / binary_uw_word.len()))
                 } else {
                     i
                 }
