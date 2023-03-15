@@ -19,10 +19,7 @@ impl FromStr for Xor {
 }
 
 impl Method for Xor {
-    fn encrypt(&self, uw: impl Into<String>, vw: impl Into<String>) -> CipherResult {
-        let uw = uw.into();
-        let vw = vw.into();
-
+    fn encrypt(&self, uw: String, vw: &'static str) -> CipherResult {
         let alphabet = "abcdefghijklmnopqrstuvwxyz";
         let mut binary_vw_word = "".to_string();
         let mut binary_uw_word = "".to_string();

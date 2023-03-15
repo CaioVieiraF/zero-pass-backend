@@ -18,13 +18,13 @@ impl FromStr for Vigenere {
 }
 
 impl Method for Vigenere {
-    fn encrypt(&self, uw: impl Into<String>, vw: impl Into<String>) -> CipherResult {
+    fn encrypt(&self, uw: String, vw: &'static str) -> CipherResult {
         // Definition of the alphabet used
         let alphabet = "abcdefghijklmnopqrstuvwxyz";
 
         // Getting the unique variable pass
-        let unique: String = uw.into().to_lowercase();
-        let variable: String = vw.into().to_lowercase();
+        let unique: String = uw.to_lowercase();
+        let variable: String = vw.to_lowercase();
 
         // Creating the new pass and initializing it empity
         let mut new_pass = String::new();
