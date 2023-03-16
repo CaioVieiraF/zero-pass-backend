@@ -3,17 +3,17 @@ use super::*;
 #[test]
 fn methods_test() {
     let uw: String = String::from("uniquepass");
-    let vw = "variablepass";
+    let vw = String::from("variablepass");
 
     assert_eq!(
-        encrypt::Vigenere.encrypt(uw.clone(), &vw),
+        encrypt::Vigenere.encrypt(uw.clone(), vw.clone()),
         Ok("pnzyufaehs".to_string())
     );
     assert_eq!(
-        encrypt::Base64.encrypt(uw.clone(), &vw),
+        encrypt::Base64.encrypt(uw.clone(), vw.clone()),
         Ok("dW5pcXVlcGFzcw==".to_string())
     );
-    assert_eq!(encrypt::Xor.encrypt(uw, &vw), Ok("dpyuheds".to_string()));
+    assert_eq!(encrypt::Xor.encrypt(uw, vw), Ok("dpyuheds".to_string()));
 }
 
 #[test]
@@ -92,6 +92,6 @@ fn get_methods() {
     let method = Methods::get_method(methods[1]);
     let method = method.unwrap();
 
-    let base = method.encrypt("uniquepass".to_string(), "variablepass");
+    let base = method.encrypt("uniquepass".to_string(), "variablepass".to_string());
     assert_eq!(base, Ok("dW5pcXVlcGFzcw==".to_string()))
 }

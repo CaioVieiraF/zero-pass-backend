@@ -18,7 +18,7 @@ impl FromStr for Base64 {
 }
 
 impl Method for Base64 {
-    fn encrypt(&self, uw: String, _vw: &'static str) -> CipherResult {
+    fn encrypt(&self, uw: String, _vw: String) -> CipherResult {
         use base64::{engine::general_purpose, Engine as _};
 
         let encoded: String = general_purpose::STANDARD.encode(uw.as_bytes());

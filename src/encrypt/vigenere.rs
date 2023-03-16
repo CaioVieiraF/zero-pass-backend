@@ -18,7 +18,7 @@ impl FromStr for Vigenere {
 }
 
 impl Method for Vigenere {
-    fn encrypt(&self, uw: String, vw: &'static str) -> CipherResult {
+    fn encrypt(&self, uw: String, vw: String) -> CipherResult {
         // Definition of the alphabet used
         let alphabet = "abcdefghijklmnopqrstuvwxyz";
 

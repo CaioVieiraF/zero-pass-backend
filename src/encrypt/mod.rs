@@ -20,7 +20,7 @@ pub struct Unique(String);
 #[derive(Default, Clone)]
 pub struct NoVariable;
 #[derive(Default, Clone)]
-pub struct Variable(&'static str);
+pub struct Variable(String);
 
 /// Definines the password builder that implements default values and can be cloned.
 #[derive(Clone, Default)]
@@ -32,7 +32,7 @@ pub struct PasswordBuilder<U, V> {
 
 /// Defines method encryption trait.
 pub trait Method {
-    fn encrypt(&self, uw: String, vw: &'static str) -> CipherResult;
+    fn encrypt(&self, uw: String, vw: String) -> CipherResult;
 }
 
 /// Implementation of PasswordBuilder when nothing is set yet.
@@ -54,7 +54,7 @@ impl<U, V> PasswordBuilder<U, V> {
     }
 
     /// Sets the variable word to build the password.
-    pub fn variable(self, word: impl Into<&'static str>) -> PasswordBuilder<U, Variable> {
+    pub fn variable(self, word: impl Into<String>) -> PasswordBuilder<U, Variable> {
         PasswordBuilder {
             unique: self.unique,
             variable: Variable(word.into()),
@@ -83,7 +83,7 @@ impl PasswordBuilder<Unique, Variable> {
 
         for _ in 0..repeat {
             let uw = self.unique.0;
-            let new_pass = method.encrypt(uw, vw)?;
+            let new_pass = method.encrypt(uw, vw.clone())?;
 
             self.unique = Unique(new_pass);
         }
