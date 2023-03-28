@@ -95,3 +95,17 @@ fn get_methods() {
     let base = method.encrypt("uniquepass".to_string(), "variablepass".to_string());
     assert_eq!(base, Ok("dW5pcXVlcGFzcw==".to_string()))
 }
+
+#[test]
+fn gen_from_get() {
+    let method = Methods::get_method("Vigenere");
+    let method = method.unwrap();
+
+    let pass = encrypt::PasswordBuilder::new()
+        .unique("uniquepass")
+        .variable("variablepass")
+        .method_ptr(method).unwrap()
+        .build();
+
+    assert_eq!(pass, "pnzyufaehs");
+}

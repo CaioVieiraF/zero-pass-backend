@@ -73,7 +73,30 @@ impl PasswordBuilder<Unique, Variable> {
     }
 
     /// Generates a password based on a method. Can be chained with multiple methods.
-    pub fn method(mut self, method: impl Method) -> Result<Self, CipherError> {
+    pub fn method<T: Method>(mut self, method: T) -> Result<Self, CipherError> {
+        let vw = self.variable.0;
+
+        let mut repeat = self.repeat.unwrap_or(1);
+        if repeat == 0 {
+            repeat = 1_u8;
+        }
+
+        for _ in 0..repeat {
+            let uw = self.unique.0;
+            let new_pass = method.encrypt(uw, vw.clone())?;
+
+            self.unique = Unique(new_pass);
+        }
+
+        self.repeat = None;
+
+        self.variable.0 = vw;
+        Ok(self)
+    }
+
+
+    /// Generates a password based on a method from a pointer. Can be chained with multiple methods.
+    pub fn method_ptr(mut self, method: Box<dyn Method>) -> Result<Self, CipherError> {
         let vw = self.variable.0;
 
         let mut repeat = self.repeat.unwrap_or(1);
