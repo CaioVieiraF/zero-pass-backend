@@ -1,35 +1,38 @@
-use crate::{CipherError, CipherResult, Method};
-use serde::Serialize;
+use crate::prelude::*;
+use crate::Method;
 
+use std::rc::Rc;
 use std::str::FromStr;
 
-#[derive(Serialize, Clone, Debug)]
+use super::ALPHABET;
+
+#[derive(Clone, Debug, PartialEq, Default)]
+#[cfg_attr(featue = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Xor;
 
 impl FromStr for Xor {
-    type Err = CipherError;
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
+    fn from_str(input: &str) -> Result<Self> {
         if input.to_uppercase() == "XOR" {
             Ok(Xor)
         } else {
-            Err(CipherError::InvalidMethodError)
+            Err(Error::InvalidMethodError(input.to_string()))
         }
     }
 }
 
 impl Method for Xor {
-    fn encrypt(&self, uw: String, vw: String) -> CipherResult {
-        let alphabet = "abcdefghijklmnopqrstuvwxyz";
-        let mut binary_vw_word = "".to_string();
-        let mut binary_uw_word = "".to_string();
-        let mut new_pass = String::from("");
+    fn encrypt(&self, uw: Rc<str>, vw: Rc<str>) -> Result<String> {
+        let mut binary_vw_word = String::new();
+        let mut binary_uw_word = String::new();
+        let mut new_pass = String::new();
 
-        for i in &mut (*vw).bytes() {
-            binary_vw_word += &format!("0{:b}", i);
+        for i in vw.bytes() {
+            binary_vw_word.push_str(&format!("0{:b}", i));
         }
-        for i in &mut (*uw).bytes() {
-            binary_uw_word += &format!("0{:b}", i);
+        for i in uw.bytes() {
+            binary_uw_word.push_str(&format!("0{:b}", i));
         }
 
         let mut x = 0;
@@ -53,18 +56,18 @@ impl Method for Xor {
                 .to_string()
                 .parse()
                 .unwrap();
-            binary_pass += &format!("{:b}", uw_val ^ vw_val);
+            binary_pass.push_str(&format!("{:b}", uw_val ^ vw_val));
             x += 1;
         }
 
         let binary_vec: Vec<&str> = binary_pass.split(' ').collect();
         for i in binary_vec {
             let number = usize::from_str_radix(i, 2).unwrap();
-            let val = match alphabet.as_bytes().get(number) {
+            let val = match ALPHABET.get(number) {
                 Some(v) => v,
                 None => continue,
             };
-            new_pass += &(*val as char).to_string();
+            new_pass.push(*val);
         }
 
         Ok(new_pass)

@@ -1,29 +1,19 @@
-use crate::encrypt::*;
-
 pub mod encrypt;
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum CipherError {
-    InvalidCharacterError,
-    InvalidMethodError,
-}
-
+pub mod error;
+pub mod prelude;
 pub struct Methods;
 
-pub type CipherResult = Result<String, CipherError>;
+use crate::encrypt::*;
+use prelude::*;
 
 impl Methods {
-    pub fn get_methods() -> Vec<&'static str> {
-        let methods = vec![
-            "Vigenere",
-            "Base64",
-            "Xor",
-        ];
+    pub fn get_methods<'a>() -> Vec<&'a str> {
+        let methods = vec!["Vigenere", "Base64", "Xor"];
 
         methods
     }
 
-    pub fn get_method(text: impl Into<String>) -> Result<Box<dyn Method>, CipherError> {
+    pub fn get_method(text: impl Into<String>) -> Result<Box<dyn Method>> {
         let text = text.into();
 
         if let Ok(v) = text.parse::<Vigenere>() {
@@ -38,8 +28,7 @@ impl Methods {
             return Ok(Box::new(b));
         }
 
-        Err(CipherError::InvalidMethodError)
-
+        Err(Error::InvalidMethodError(text))
     }
 }
 

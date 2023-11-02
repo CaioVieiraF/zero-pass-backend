@@ -1,9 +1,10 @@
 use super::*;
+use std::rc::Rc;
 
 #[test]
 fn methods_test() {
-    let uw: String = String::from("uniquepass");
-    let vw = String::from("variablepass");
+    let uw: Rc<str> = Rc::from("uniquepass");
+    let vw: Rc<str> = Rc::from("variablepass");
 
     assert_eq!(
         encrypt::Vigenere.encrypt(uw.clone(), vw.clone()),
@@ -92,7 +93,7 @@ fn get_methods() {
     let method = Methods::get_method(methods[1]);
     let method = method.unwrap();
 
-    let base = method.encrypt("uniquepass".to_string(), "variablepass".to_string());
+    let base = method.encrypt(Rc::from("uniquepass"), Rc::from("variablepass"));
     assert_eq!(base, Ok("dW5pcXVlcGFzcw==".to_string()))
 }
 
@@ -104,7 +105,8 @@ fn gen_from_get() {
     let pass = encrypt::PasswordBuilder::new()
         .unique("uniquepass")
         .variable("variablepass")
-        .method_ptr(method).unwrap()
+        .method_ptr(method)
+        .unwrap()
         .build();
 
     assert_eq!(pass, "pnzyufaehs");

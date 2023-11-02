@@ -1,30 +1,32 @@
-use crate::{CipherError, CipherResult, Method};
-use serde::Serialize;
+use crate::prelude::*;
+use crate::Method;
+use std::rc::Rc;
 use std::str::FromStr;
 
-#[derive(Serialize, Clone, Debug)]
+use super::ALPHABET;
+
+#[derive(Clone, Debug, Default)]
+#[cfg_attr(featue = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct Vigenere;
 
 impl FromStr for Vigenere {
-    type Err = CipherError;
+    type Err = Error;
 
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
+    fn from_str(input: &str) -> Result<Self> {
         if input.to_uppercase() == "VIGENERE" {
-            Ok(Vigenere)
+            Ok(Self)
         } else {
-            Err(CipherError::InvalidMethodError)
+            Err(Error::InvalidMethodError(input.to_string()))
         }
     }
 }
 
 impl Method for Vigenere {
-    fn encrypt(&self, uw: String, vw: String) -> CipherResult {
-        // Definition of the alphabet used
-        let alphabet = "abcdefghijklmnopqrstuvwxyz";
-
+    fn encrypt(&self, uw: Rc<str>, vw: Rc<str>) -> Result<String> {
         // Getting the unique variable pass
-        let unique: String = uw.to_lowercase();
-        let variable: String = vw.to_lowercase();
+        let unique = uw.to_lowercase();
+        let variable = vw.to_lowercase();
 
         // Creating the new pass and initializing it empity
         let mut new_pass = String::new();
@@ -44,15 +46,15 @@ impl Method for Vigenere {
             };
 
             // Just an alias for the alphabet lenght as a i8
-            let alphabet_len = alphabet.len() as i8;
+            let alphabet_len = ALPHABET.len() as i8;
 
             // Get the index of the current unique pass character from the alphabet.
-            // If there is something that is not there, like a special character or number, just append
+            // If there is some character that is not in the alphabet, like a special character or number, just append
             // it to the new pass.
-            let pos_u = match alphabet.find(&c.to_string()) {
+            let pos_u = match ALPHABET.iter().position(|&s| s == c) {
                 Some(u) => u as i8,
                 None => {
-                    new_pass += &c.to_string();
+                    new_pass.push(c);
                     continue;
                 }
             };
@@ -60,10 +62,12 @@ impl Method for Vigenere {
             // Get the index of the current variable pass character from the alphabet. If the character
             // is not on the defined alphabet it returns a error since every character here should
             // match a valid character on the unique pass.
-            let pos_v = match alphabet.find(variable.as_bytes()[variable_index] as char) {
-                Some(v) => v as i8,
-                None => return Err(CipherError::InvalidCharacterError),
-            };
+            let pos_v: i8 = ALPHABET
+                .iter()
+                .position(|&s| s == variable.as_bytes()[variable_index] as char)
+                .ok_or(Error::InvalidCharacterError)?
+                .try_into()
+                .unwrap();
 
             // Get the index of the new charater on the alphabet based on the unique and variable pass.
             let mut position = pos_u - alphabet_len + pos_v;
@@ -72,7 +76,7 @@ impl Method for Vigenere {
             }
 
             // Get the new character on the alphabet.
-            let new_character = alphabet.as_bytes()[position as usize] as char;
+            let new_character = ALPHABET[position as usize];
 
             i += 1;
             new_pass.push(new_character);

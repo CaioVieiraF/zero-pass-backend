@@ -1,6 +1,6 @@
 [package]
 name = "zero_pass_backend"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["caio <wabros@proton.me>"]
 license = "GPL-3.0"
 description = "The Zero Pass Project brain"
@@ -11,6 +11,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version="1", features=["derive"] }
+serde = { version="1", features=["derive"] , optional = true }
 serde_json = "1"
 base64 = "0.21"
+thiserror = "1.0.50"
+
+[features]
+serde = ["dep:serde"]
