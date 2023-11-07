@@ -1,34 +1,32 @@
 pub mod encrypt;
 pub mod error;
 pub mod prelude;
-pub struct Methods;
 
 use crate::encrypt::*;
 use prelude::*;
+use zero_pass_backend_derive::Method;
+use std::str::FromStr;
 
-impl Methods {
-    pub fn get_methods<'a>() -> Vec<&'a str> {
-        let methods = vec!["Vigenere", "Base64", "Xor"];
+#[derive(Method, Debug, Clone)]
+pub enum Methods {
+    Vigenere,
+    Base64,
+    Xor,
+}
 
-        methods
+impl TryFrom<&str> for Methods {
+    type Error = Error;
+
+    fn try_from(value: &str) -> Result<Self> {
+        Methods::try_from(value.to_string())
     }
+}
 
-    pub fn get_method(text: impl Into<String>) -> Result<Box<dyn Method>> {
-        let text = text.into();
+impl FromStr for Methods {
+    type Err = Error;
 
-        if let Ok(v) = text.parse::<Vigenere>() {
-            return Ok(Box::new(v));
-        }
-
-        if let Ok(b) = text.parse::<Base64>() {
-            return Ok(Box::new(b));
-        }
-
-        if let Ok(b) = text.parse::<Xor>() {
-            return Ok(Box::new(b));
-        }
-
-        Err(Error::InvalidMethodError(text))
+    fn from_str(value: &str) -> Result<Self> {
+        Methods::try_from(value.to_string())
     }
 }
 
