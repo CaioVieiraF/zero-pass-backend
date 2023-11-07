@@ -5,8 +5,8 @@ edition = "2021"
 authors = ["caio <wabros@proton.me>"]
 license = "GPL-3.0"
 description = "derive macros of zero pass backend"
-homepage = "https://gitlab.com/zero-pass/zero_pass_backend_derive"
-repository = "https://gitlab.com/zero-pass/zero_pass_backend_derive"
+homepage = "https://gitlab.com/zero-pass/zero_pass_backend"
+repository = "https://github.com/Zero-Pass/zero-pass-backend/tree/master/zero_pass_backend_derive"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
