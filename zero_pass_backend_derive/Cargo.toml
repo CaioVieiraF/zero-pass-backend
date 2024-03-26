@@ -1,6 +1,6 @@
 [package]
 name = "zero_pass_backend_derive"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["caio <wabros@proton.me>"]
 license = "GPL-3.0"
