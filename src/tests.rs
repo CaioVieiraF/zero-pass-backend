@@ -117,3 +117,15 @@ async fn gen_from_try_from() {
 
     assert_eq!(pass, "pnzyufaehs");
 }
+
+#[tokio::test]
+async fn async_heavy_task() {
+    let pass = encrypt::PasswordBuilder::new()
+        .unique("test")
+        .variable("test")
+        .repeat(64)
+        .method(Base64)
+        .await
+        .unwrap()
+        .build();
+}
