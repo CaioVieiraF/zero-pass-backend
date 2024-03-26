@@ -1,7 +1,8 @@
 use crate::prelude::*;
 use crate::Method;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::str::FromStr;
+use async_trait::async_trait;
 
 use super::ALPHABET;
 
@@ -22,8 +23,9 @@ impl FromStr for Vigenere {
     }
 }
 
+#[async_trait]
 impl Method for Vigenere {
-    fn encrypt(&self, uw: Rc<str>, vw: Rc<str>) -> Result<String> {
+    async fn encrypt(&self, uw: Arc<str>, vw: Arc<str>) -> Result<String> {
         // Getting the unique variable pass
         let unique = uw.to_lowercase();
         let variable = vw.to_lowercase();

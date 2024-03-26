@@ -3,6 +3,7 @@ pub mod error;
 pub mod prelude;
 
 use crate::encrypt::*;
+use std::sync::Arc;
 use prelude::*;
 use zero_pass_backend_derive::Method;
 use std::str::FromStr;

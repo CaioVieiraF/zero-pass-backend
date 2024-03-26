@@ -1,8 +1,9 @@
 use crate::prelude::*;
 use crate::Method;
 
-use std::rc::Rc;
+use std::sync::Arc;
 use std::str::FromStr;
+use async_trait::async_trait;
 
 use super::ALPHABET;
 
@@ -22,8 +23,9 @@ impl FromStr for Xor {
     }
 }
 
+#[async_trait]
 impl Method for Xor {
-    fn encrypt(&self, uw: Rc<str>, vw: Rc<str>) -> Result<String> {
+    async fn encrypt(&self, uw: Arc<str>, vw: Arc<str>) -> Result<String> {
         let mut binary_vw_word = String::new();
         let mut binary_uw_word = String::new();
         let mut new_pass = String::new();

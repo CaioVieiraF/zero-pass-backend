@@ -15,7 +15,8 @@ use crate::prelude::*;
 use std::default::Default;
 
 // Other exports.
-use std::rc::Rc;
+use std::sync::Arc;
+use async_trait::async_trait;
 
 // Definition of the alphabet used on some encryption methods.
 pub static ALPHABET: [char; 26] = [
@@ -27,11 +28,11 @@ pub static ALPHABET: [char; 26] = [
 #[derive(Default, Clone, Debug)]
 pub struct NoUnique;
 #[derive(Clone, Debug)]
-pub struct Unique(Rc<str>);
+pub struct Unique(Arc<str>);
 #[derive(Default, Clone, Debug)]
 pub struct NoVariable;
 #[derive(Clone, Debug)]
-pub struct Variable(Rc<str>);
+pub struct Variable(Arc<str>);
 
 /// Definines the password builder that implements default values and can be cloned.
 #[derive(Clone, Default, Debug)]
@@ -42,8 +43,9 @@ pub struct PasswordBuilder<U, V> {
 }
 
 /// Defines method encryption trait.
+#[async_trait]
 pub trait Method: std::fmt::Debug {
-    fn encrypt(&self, uw: Rc<str>, vw: Rc<str>) -> Result<String>;
+    async fn encrypt(&self, uw: Arc<str>, vw: Arc<str>) -> Result<String>;
 }
 
 /// Implementation of PasswordBuilder when nothing is set yet.
@@ -58,7 +60,7 @@ impl<U, V> PasswordBuilder<U, V> {
     /// Sets the unique word to build the passoword.
     pub fn unique(self, word: impl Into<String>) -> PasswordBuilder<Unique, V> {
         PasswordBuilder {
-            unique: Unique(Rc::from(word.into())),
+            unique: Unique(Arc::from(word.into())),
             variable: self.variable,
             repeat: self.repeat,
         }
@@ -68,7 +70,7 @@ impl<U, V> PasswordBuilder<U, V> {
     pub fn variable(self, word: impl Into<String>) -> PasswordBuilder<U, Variable> {
         PasswordBuilder {
             unique: self.unique,
-            variable: Variable(Rc::from(word.into())),
+            variable: Variable(Arc::from(word.into())),
             repeat: self.repeat,
         }
     }
@@ -85,7 +87,7 @@ impl PasswordBuilder<Unique, Variable> {
     }
 
     /// Generates a password based on a method. Can be chained with multiple methods.
-    pub fn method<T: Method + Default + PartialEq + Clone>(self, method: T) -> Result<Self> {
+    pub async fn method<T: Method + Default + PartialEq + Clone>(self, method: T) -> Result<Self> {
         let vw = self.variable.0.clone();
 
         let mut repeat = self.repeat.unwrap_or(1);
@@ -95,9 +97,9 @@ impl PasswordBuilder<Unique, Variable> {
 
         let mut pass = self.unique.0.clone();
         for _ in 0..repeat {
-            let new_pass = method.encrypt(pass, vw.clone())?;
+            let new_pass = method.encrypt(pass, vw.clone()).await?;
 
-            pass = Rc::from(new_pass);
+            pass = Arc::from(new_pass);
         }
 
         Ok(PasswordBuilder {
@@ -108,7 +110,7 @@ impl PasswordBuilder<Unique, Variable> {
     }
 
     /// Generates a password based on a method from a pointer. Can be chained with multiple methods.
-    pub fn method_ptr(self, method: Box<dyn Method>) -> Result<Self> {
+    pub async fn method_ptr(self, method: Arc<dyn Method>) -> Result<Self> {
         let vw = self.variable.0.clone();
 
         let mut repeat = self.repeat.unwrap_or(1);
@@ -118,9 +120,9 @@ impl PasswordBuilder<Unique, Variable> {
 
         let mut pass = self.unique.0.clone();
         for _ in 0..repeat {
-            let new_pass = method.encrypt(pass, vw.clone())?;
+            let new_pass = method.encrypt(pass, vw.clone()).await?;
 
-            pass = Rc::from(new_pass);
+            pass = Arc::from(new_pass);
         }
 
         Ok(PasswordBuilder {

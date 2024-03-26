@@ -25,7 +25,7 @@ pub fn method_derive(input: TokenStream) -> TokenStream {
 
         to_method_arms = quote! {
             #to_method_arms
-            #enum_name::#variant_name => Box::new(#variant_name),
+            #enum_name::#variant_name => Arc::new(#variant_name),
         };
 
         try_from_arms = quote! {
@@ -49,7 +49,7 @@ pub fn method_derive(input: TokenStream) -> TokenStream {
 
 
         impl #enum_name {
-            pub fn to_method(&self) -> Box<dyn Method> {
+            pub fn to_method(&self) -> Arc<dyn Method> {
                 match self {
                     #to_method_arms
                 }

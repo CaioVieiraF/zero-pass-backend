@@ -1,8 +1,9 @@
 use crate::prelude::*;
 use crate::Method;
 
-use std::rc::Rc;
+use std::sync::Arc;
 use std::str::FromStr;
+use async_trait::async_trait;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 #[cfg_attr(featue = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -20,8 +21,9 @@ impl FromStr for Base64 {
     }
 }
 
+#[async_trait]
 impl Method for Base64 {
-    fn encrypt(&self, uw: Rc<str>, _vw: Rc<str>) -> Result<String> {
+    async fn encrypt(&self, uw: Arc<str>, _vw: Arc<str>) -> Result<String> {
         use base64::{engine::general_purpose, Engine as _};
 
         let encoded: String = general_purpose::STANDARD.encode(uw.as_bytes());

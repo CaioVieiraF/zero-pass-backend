@@ -1,24 +1,25 @@
 use super::*;
-use std::rc::Rc;
+use std::sync::Arc;
+use tokio;
 
-#[test]
-fn methods_test() {
-    let uw: Rc<str> = Rc::from("uniquepass");
-    let vw: Rc<str> = Rc::from("variablepass");
+#[tokio::test]
+async fn methods_test() {
+    let uw: Arc<str> = Arc::from("uniquepass");
+    let vw: Arc<str> = Arc::from("variablepass");
 
     assert_eq!(
-        encrypt::Vigenere.encrypt(uw.clone(), vw.clone()),
+        encrypt::Vigenere.encrypt(uw.clone(), vw.clone()).await,
         Ok("pnzyufaehs".to_string())
     );
     assert_eq!(
-        encrypt::Base64.encrypt(uw.clone(), vw.clone()),
+        encrypt::Base64.encrypt(uw.clone(), vw.clone()).await,
         Ok("dW5pcXVlcGFzcw==".to_string())
     );
-    assert_eq!(encrypt::Xor.encrypt(uw, vw), Ok("dpyuheds".to_string()));
+    assert_eq!(encrypt::Xor.encrypt(uw, vw).await, Ok("dpyuheds".to_string()));
 }
 
-#[test]
-fn gen_for_methods_test() {
+#[tokio::test]
+async fn gen_for_methods_test() {
     let builder = encrypt::PasswordBuilder::new()
         .unique("uniquepass")
         .variable("variablepass");
@@ -28,8 +29,10 @@ fn gen_for_methods_test() {
         builder
             .clone()
             .method(Base64)
+            .await
             .unwrap()
             .method(Vigenere)
+            .await
             .unwrap()
             .build(),
         "yw5gkxwwgvfrur=="
@@ -38,53 +41,55 @@ fn gen_for_methods_test() {
         builder
             .clone()
             .method(Vigenere)
+            .await
             .unwrap()
             .method(Base64)
+            .await
             .unwrap()
             .build(),
         "cG56eXVmYWVocw=="
     );
 }
 
-#[test]
-fn gen_test() {
+#[tokio::test]
+async fn gen_test() {
     let builder = encrypt::PasswordBuilder::new()
         .unique("uniquepass")
         .variable("variablepass");
 
     assert_eq!(
-        builder.clone().method(Vigenere).unwrap().build(),
+        builder.clone().method(Vigenere).await.unwrap().build(),
         "pnzyufaehs"
     );
     assert_eq!(
-        builder.clone().method(Base64).unwrap().build(),
+        builder.clone().method(Base64).await.unwrap().build(),
         "dW5pcXVlcGFzcw=="
     );
-    assert_eq!(builder.clone().method(Xor).unwrap().build(), "dpyuheds");
+    assert_eq!(builder.clone().method(Xor).await.unwrap().build(), "dpyuheds");
 }
 
-#[test]
-fn gen_repeat_pass() {
+#[tokio::test]
+async fn gen_repeat_pass() {
     let builder = encrypt::PasswordBuilder::new()
         .unique("uniquepass")
         .variable("variablepass");
 
     assert_eq!(
-        builder.clone().repeat(2).method(Vigenere).unwrap().build(),
+        builder.clone().repeat(2).method(Vigenere).await.unwrap().build(),
         "knqgugliws"
     );
     assert_eq!(
-        builder.clone().repeat(2).method(Base64).unwrap().build(),
+        builder.clone().repeat(2).method(Base64).await.unwrap().build(),
         "ZFc1cGNYVmxjR0Z6Y3c9PQ=="
     );
     assert_eq!(
-        builder.clone().repeat(2).method(Xor).unwrap().build(),
+        builder.clone().repeat(2).method(Xor).await.unwrap().build(),
         "srljhiw"
     );
 }
 
-#[test]
-fn get_methods() {
+#[tokio::test]
+async fn get_methods() {
     let methods = Methods::get_methods();
     println!("{:?}", methods);
 
@@ -93,12 +98,12 @@ fn get_methods() {
     let method = Methods::try_from(methods[1]);
     let method = method.unwrap().to_method();
 
-    let base = method.encrypt(Rc::from("uniquepass"), Rc::from("variablepass"));
+    let base = method.encrypt(Arc::from("uniquepass"), Arc::from("variablepass")).await;
     assert_eq!(base, Ok("dW5pcXVlcGFzcw==".to_string()))
 }
 
-#[test]
-fn gen_from_try_from() {
+#[tokio::test]
+async fn gen_from_try_from() {
     let method = Methods::try_from("Vigenere");
     let method = method.unwrap().to_method();
 
@@ -106,6 +111,7 @@ fn gen_from_try_from() {
         .unique("uniquepass")
         .variable("variablepass")
         .method_ptr(method)
+        .await
         .unwrap()
         .build();
 
