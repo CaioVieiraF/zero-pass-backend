@@ -120,7 +120,7 @@ async fn gen_from_try_from() {
 
 #[tokio::test]
 async fn async_heavy_task() {
-    let pass = encrypt::PasswordBuilder::new()
+    let _ = encrypt::PasswordBuilder::new()
         .unique("test")
         .variable("test")
         .repeat(64)

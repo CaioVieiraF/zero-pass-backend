@@ -49,7 +49,7 @@ pub fn method_derive(input: TokenStream) -> TokenStream {
 
 
         impl #enum_name {
-            pub fn to_method(&self) -> Arc<dyn Method> {
+            pub fn to_method(&self) -> Arc<dyn Method + Sync + Send> {
                 match self {
                     #to_method_arms
                 }

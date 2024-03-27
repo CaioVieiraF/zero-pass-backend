@@ -110,7 +110,7 @@ impl PasswordBuilder<Unique, Variable> {
     }
 
     /// Generates a password based on a method from a pointer. Can be chained with multiple methods.
-    pub async fn method_ptr(self, method: Arc<dyn Method>) -> Result<Self> {
+    pub async fn method_ptr(self, method: Arc<dyn Method + Sync + Send>) -> Result<Self> {
         let vw = self.variable.0.clone();
 
         let mut repeat = self.repeat.unwrap_or(1);
