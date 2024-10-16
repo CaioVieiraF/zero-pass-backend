@@ -1,22 +1,20 @@
-// Exposing encryption methods.
-pub mod base64;
-pub mod vigenere;
-pub mod xor;
+// Using standard library's traits.
+use std::default::Default;
+
+use base64ct::{Base64, Encoding};
+// Other exports.
+use digest::DynDigest;
 
 // Importing the encryption methods.
-pub use base64::Base64;
 pub use vigenere::Vigenere;
 pub use xor::Xor;
 
 // Bringing crate's prelude to scope.
 use crate::prelude::*;
 
-// Using standard library's traits.
-use std::default::Default;
-
-// Other exports.
-use std::sync::Arc;
-use async_trait::async_trait;
+// Exposing encryption methods.
+pub mod vigenere;
+pub mod xor;
 
 // Definition of the alphabet used on some encryption methods.
 pub static ALPHABET: [char; 26] = [
@@ -26,58 +24,119 @@ pub static ALPHABET: [char; 26] = [
 
 // Setting States for the PasswordBuilder
 #[derive(Default, Clone, Debug)]
-pub struct NoUnique;
+pub struct NoContext;
 #[derive(Clone, Debug)]
-pub struct Unique(Arc<str>);
+pub struct Context(Box<str>);
 #[derive(Default, Clone, Debug)]
-pub struct NoVariable;
+pub struct NoService;
 #[derive(Clone, Debug)]
-pub struct Variable(Arc<str>);
+pub struct Service(Box<str>);
+#[derive(Default, Clone, Debug)]
+pub struct NoEncrypt;
+#[derive(Default, Clone, Debug)]
+pub struct Encrypt(Box<[u8]>);
+#[derive(Default, Clone, Debug)]
+pub struct Hashed(String);
+#[derive(Default, Clone, Debug)]
+pub struct NoHashed;
 
 /// Definines the password builder that implements default values and can be cloned.
 #[derive(Clone, Default, Debug)]
-pub struct PasswordBuilder<U, V> {
-    unique: U,
-    variable: V,
+pub struct PasswordBuilder<C, S, B, H> {
+    context: C,
+    service: S,
+    encrypt: B,
+    hashed: H,
     repeat: Option<u8>,
 }
 
-/// Defines method encryption trait.
-#[async_trait]
-pub trait Method: std::fmt::Debug {
-    async fn encrypt(&self, uw: Arc<str>, vw: Arc<str>) -> Result<String>;
+pub trait Encrypter {
+    fn encrypt(self, context_word: &[u8], service_word: &[u8]) -> Result<Box<[u8]>>;
 }
 
 /// Implementation of PasswordBuilder when nothing is set yet.
-impl PasswordBuilder<NoUnique, NoVariable> {
+impl PasswordBuilder<NoContext, NoService, NoEncrypt, NoHashed> {
     pub fn new() -> Self {
         Default::default()
     }
 }
 
 /// Implementation of PasswordBuilder when it is already instantiated.
-impl<U, V> PasswordBuilder<U, V> {
+impl<C, S> PasswordBuilder<C, S, NoEncrypt, NoHashed> {
     /// Sets the unique word to build the passoword.
-    pub fn unique(self, word: impl Into<String>) -> PasswordBuilder<Unique, V> {
+    pub fn context(
+        self,
+        word: impl Into<String>,
+    ) -> PasswordBuilder<Context, S, NoEncrypt, NoHashed> {
         PasswordBuilder {
-            unique: Unique(Arc::from(word.into())),
-            variable: self.variable,
+            context: Context(Box::from(word.into())),
+            service: self.service,
+            encrypt: self.encrypt,
+            hashed: self.hashed,
             repeat: self.repeat,
         }
     }
 
     /// Sets the variable word to build the password.
-    pub fn variable(self, word: impl Into<String>) -> PasswordBuilder<U, Variable> {
+    pub fn service(
+        self,
+        word: impl Into<String>,
+    ) -> PasswordBuilder<C, Service, NoEncrypt, NoHashed> {
         PasswordBuilder {
-            unique: self.unique,
-            variable: Variable(Arc::from(word.into())),
+            context: self.context,
+            service: Service(Box::from(word.into())),
+            encrypt: self.encrypt,
+            hashed: self.hashed,
             repeat: self.repeat,
         }
     }
 }
 
-/// Implementation of PasswordBuilder when "unique" and "variable" fields are set.
-impl PasswordBuilder<Unique, Variable> {
+/// Scramble the context and service words when they are set.
+impl PasswordBuilder<Context, Service, NoEncrypt, NoHashed> {
+    pub fn encrypt(
+        self,
+        encrypt_method: impl Encrypter,
+    ) -> Result<PasswordBuilder<Context, Service, Encrypt, NoHashed>> {
+        let encrypted_result =
+            encrypt_method.encrypt(self.context.0.as_bytes(), self.service.0.as_bytes())?;
+        Ok(PasswordBuilder {
+            context: self.context,
+            service: self.service,
+            encrypt: Encrypt(encrypted_result),
+            hashed: self.hashed,
+            repeat: self.repeat,
+        })
+    }
+}
+
+type HasherArg<'a> = &'a mut dyn DynDigest;
+
+/// Implementation of PasswordBuilder when "context" and "service" fields are set
+/// and they are scrambled
+impl<H> PasswordBuilder<Context, Service, Encrypt, H> {
+    pub fn hash(self, hasher: HasherArg) -> PasswordBuilder<Context, Service, Encrypt, Hashed> {
+        hasher.update(&self.encrypt.0);
+        let mut hash = hasher.finalize_reset();
+        let mut encoded_hash = Base64::encode_string(&hash);
+
+        if let Some(r) = self.repeat {
+            for _ in 1..=r {
+                encoded_hash = Base64::encode_string(&hash);
+                hasher.update(encoded_hash.as_bytes());
+                hash = hasher.finalize_reset();
+            }
+        }
+
+        PasswordBuilder {
+            hashed: Hashed(encoded_hash),
+            context: self.context,
+            service: self.service,
+            encrypt: self.encrypt,
+            repeat: None,
+        }
+    }
+
     /// Sets a number of repetitions to use on the following specified method.
     pub fn repeat(self, number: impl Into<u8>) -> Self {
         PasswordBuilder {
@@ -85,54 +144,10 @@ impl PasswordBuilder<Unique, Variable> {
             ..self
         }
     }
+}
 
-    /// Generates a password based on a method. Can be chained with multiple methods.
-    pub async fn method<T: Method + Default + PartialEq + Clone>(self, method: T) -> Result<Self> {
-        let vw = self.variable.0.clone();
-
-        let mut repeat = self.repeat.unwrap_or(1);
-        if repeat == 0 {
-            repeat = 1_u8;
-        }
-
-        let mut pass = self.unique.0.clone();
-        for _ in 0..repeat {
-            let new_pass = method.encrypt(pass, vw.clone()).await?;
-
-            pass = Arc::from(new_pass);
-        }
-
-        Ok(PasswordBuilder {
-            unique: Unique(pass),
-            repeat: None,
-            ..self
-        })
-    }
-
-    /// Generates a password based on a method from a pointer. Can be chained with multiple methods.
-    pub async fn method_ptr(self, method: Arc<dyn Method + Sync + Send>) -> Result<Self> {
-        let vw = self.variable.0.clone();
-
-        let mut repeat = self.repeat.unwrap_or(1);
-        if repeat == 0 {
-            repeat = 1_u8;
-        }
-
-        let mut pass = self.unique.0.clone();
-        for _ in 0..repeat {
-            let new_pass = method.encrypt(pass, vw.clone()).await?;
-
-            pass = Arc::from(new_pass);
-        }
-
-        Ok(PasswordBuilder {
-            unique: Unique(pass),
-            repeat: None,
-            ..self
-        })
-    }
-
-    pub fn build(self) -> String {
-        self.unique.0.to_string()
+impl PasswordBuilder<Context, Service, Encrypt, Hashed> {
+    pub fn encode(self) -> String {
+        self.hashed.0
     }
 }

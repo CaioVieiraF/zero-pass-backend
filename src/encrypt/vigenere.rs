@@ -1,14 +1,9 @@
 use crate::prelude::*;
-use crate::Method;
-use std::sync::Arc;
 use std::str::FromStr;
-use async_trait::async_trait;
 
-use super::ALPHABET;
+use super::{Encrypter, ALPHABET};
 
 #[derive(Clone, Debug, Default)]
-#[cfg_attr(featue = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(test, derive(PartialEq))]
 pub struct Vigenere;
 
 impl FromStr for Vigenere {
@@ -23,14 +18,18 @@ impl FromStr for Vigenere {
     }
 }
 
-#[async_trait]
-impl Method for Vigenere {
-    async fn encrypt(&self, uw: Arc<str>, vw: Arc<str>) -> Result<String> {
+impl Encrypter for Vigenere {
+    fn encrypt(self, context_word: &[u8], service_word: &[u8]) -> Result<Box<[u8]>> {
         // Getting the unique variable pass
-        let unique = uw.to_lowercase();
-        let variable = vw.to_lowercase();
+        let unique = String::from_utf8(context_word.to_vec())
+            .map_err(|_| Error::InvalidCharacterError)?
+            .to_lowercase();
 
-        // Creating the new pass and initializing it empity
+        let variable = String::from_utf8(service_word.to_vec())
+            .map_err(|_| Error::InvalidCharacterError)?
+            .to_lowercase();
+
+        // Creating the new pass and initializing it empty
         let mut new_pass = String::new();
 
         // Counter to control valid characters on the alphabet
@@ -84,6 +83,6 @@ impl Method for Vigenere {
             new_pass.push(new_character);
         }
 
-        Ok(new_pass)
+        Ok(Box::from(new_pass.as_bytes()))
     }
 }
